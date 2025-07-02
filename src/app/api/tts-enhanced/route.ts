@@ -51,7 +51,7 @@ export async function POST(request: NextRequest) {
     // Note: OpenRouter doesn't currently support TTS endpoints
     // Fall back to direct OpenAI for TTS functionality
     if (process.env.OPENAI_API_KEY) {
-      return await generateWithOpenAI(text, voice)
+      return await generateWithOpenAI(text)
     } else if (process.env.OPENROUTER_API_KEY) {
       // Try OpenRouter first, but it will likely fail for TTS
       try {
