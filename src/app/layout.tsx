@@ -8,7 +8,8 @@ import {
   UserButton,
 } from '@clerk/nextjs'
 import { Geist, Geist_Mono } from 'next/font/google'
-import './globals.css'
+import './styles/globals.css'
+import OnboardingFlow from '@/components/OnboardingFlow'
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -50,7 +51,9 @@ export default function RootLayout({
               <UserButton />
             </SignedIn>
           </header>
-          {children}
+          <OnboardingFlow>
+            {children}
+          </OnboardingFlow>
         </body>
       </html>
     </ClerkProvider>
