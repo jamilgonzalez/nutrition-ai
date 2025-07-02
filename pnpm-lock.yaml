@@ -47,6 +47,9 @@ importers:
       open-router:
         specifier: ^1.0.1
         version: 1.0.1
+      openai:
+        specifier: ^5.8.2
+        version: 5.8.2(ws@8.18.3)(zod@3.25.67)
       react:
         specifier: ^19.0.0
         version: 19.1.0
@@ -1798,6 +1801,18 @@ packages:
 
   open-router@1.0.1:
     resolution: {integrity: sha512-cVhQLO3iSASbsxx0WZO1SHOGnTboWTqOHRiUWP/ZxZqusv8g6Xq0S78SF09fpxPGPwRl1IaE5xtxTNRUySQLeg==}
+
+  openai@5.8.2:
+    resolution: {integrity: sha512-8C+nzoHYgyYOXhHGN6r0fcb4SznuEn1R7YZMvlqDbnCuE0FM2mm3T1HiYW6WIcMS/F1Of2up/cSPjLPaWt0X9Q==}
+    hasBin: true
+    peerDependencies:
+      ws: ^8.18.0
+      zod: ^3.23.8
+    peerDependenciesMeta:
+      ws:
+        optional: true
+      zod:
+        optional: true
 
   optionator@0.9.4:
     resolution: {integrity: sha512-6IpQ7mKUxRcZNLIObR0hz7lxsapSSIYNZJwXPGeF0mTVqGKFIXj1DQcMoT22S3ROcLyY/rz0PWaWZ9ayWmad9g==}
@@ -4051,6 +4066,11 @@ snapshots:
       async: 2.6.4
       func-delegate: 0.2.2
       lodash: 4.17.21
+
+  openai@5.8.2(ws@8.18.3)(zod@3.25.67):
+    optionalDependencies:
+      ws: 8.18.3
+      zod: 3.25.67
 
   optionator@0.9.4:
     dependencies:
