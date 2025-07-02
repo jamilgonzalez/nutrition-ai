@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button'
 import { useChat } from 'ai/react'
 import { useRef, useState, useEffect } from 'react'
 import { Mic, Square, BarChart3, Camera, X } from 'lucide-react'
+import Image from 'next/image'
 import NutritionDisplay, {
   type NutritionData,
 } from '@/components/NutritionDisplay'
@@ -22,14 +23,14 @@ interface SpeechRecognition extends EventTarget {
   lang: string
   start(): void
   stop(): void
-  onstart: ((this: SpeechRecognition, ev: Event) => any) | null
+  onstart: ((this: SpeechRecognition, ev: Event) => void) | null
   onresult:
-    | ((this: SpeechRecognition, ev: SpeechRecognitionEvent) => any)
+    | ((this: SpeechRecognition, ev: SpeechRecognitionEvent) => void)
     | null
   onerror:
-    | ((this: SpeechRecognition, ev: SpeechRecognitionErrorEvent) => any)
+    | ((this: SpeechRecognition, ev: SpeechRecognitionErrorEvent) => void)
     | null
-  onend: ((this: SpeechRecognition, ev: Event) => any) | null
+  onend: ((this: SpeechRecognition, ev: Event) => void) | null
 }
 
 interface SpeechRecognitionEvent extends Event {
@@ -59,7 +60,7 @@ interface SpeechRecognitionAlternative {
   confidence: number
 }
 
-declare var SpeechRecognition: {
+declare const SpeechRecognition: {
   prototype: SpeechRecognition
   new (): SpeechRecognition
 }
@@ -356,13 +357,20 @@ export default function Home() {
   }
 
   // Function to render tool call status within the message content
-  const renderMessageContent = (message: any) => {
+  const renderMessageContent = (message: {
+    content?: string
+    toolInvocations?: Array<{
+      state: string
+      toolName: string
+      args?: { query: string }
+    }>
+  }) => {
     console.log(message)
     let content = message.content || ''
     const toolInvocations = message.toolInvocations || []
 
     // Add tool status information to the content display
-    toolInvocations.forEach((tool: any) => {
+    toolInvocations.forEach((tool) => {
       if (tool.state === 'call') {
         // Show what the AI is currently doing
         if (tool.toolName === 'webSearch') {
@@ -406,10 +414,12 @@ export default function Home() {
 
               {previewUrl && (
                 <div className="mb-4">
-                  <img
+                  <Image
                     src={previewUrl}
                     alt="Selected meal"
-                    className="mx-auto max-h-64 rounded-lg"
+                    width={256}
+                    height={256}
+                    className="mx-auto max-h-64 rounded-lg object-cover"
                   />
                 </div>
               )}
@@ -570,7 +580,7 @@ export default function Home() {
 
                   {/* Show active tool calls with loading animation */}
                   {latestAnalysis.toolInvocations?.some(
-                    (tool: any) => tool.state === 'call'
+                    (tool) => tool.state === 'call'
                   ) && (
                     <div className="mt-3 p-3 bg-blue-50 rounded-lg border-l-4 border-blue-400">
                       <div className="flex items-center gap-2">
