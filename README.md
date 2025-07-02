@@ -1,36 +1,102 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🍎 Nutrition AI
 
-## Getting Started
+> **Effortless nutrition tracking powered by AI**
 
-First, run the development server:
+Transform your health journey with intelligent meal analysis that turns a simple photo into comprehensive nutritional insights.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## ✨ Features
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 📸 **AI-Powered Meal Logging**
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- Snap a photo of your meal
+- Get instant calorie and macro breakdown
+- Voice refinements for better accuracy
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### 📊 **Smart Dashboard**
 
-## Learn More
+- Real-time daily nutrition progress
+- Visual macro tracking (Protein, Carbs, Fat)
+- Calories remaining display
 
-To learn more about Next.js, take a look at the following resources:
+### 🎯 **Personalized Recommendations**
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- Custom meal suggestions based on your goals
+- Pantry-aware recommendations
+- Dietary preference support (Keto, Paleo, etc.)
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### 👤 **Intelligent Onboarding**
 
-## Deploy on Vercel
+- Quick profile setup
+- Automatic calorie & macro target calculation
+- Goal-based customization
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## 🚀 Getting Started
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+1. **Clone the repository**
+
+   ```bash
+   git clone https://github.com/your-username/nutrition-ai.git
+   cd nutrition-ai
+   ```
+
+2. **Install dependencies**
+
+   ```bash
+   npm install
+   # or
+   pnpm install
+   ```
+
+3. **Run the development server**
+
+   ```bash
+   npm run dev
+   # or
+   pnpm dev
+   ```
+
+4. **Open your browser**
+   Navigate to [http://localhost:3000](http://localhost:3000)
+
+## 🛠️ Tech Stack
+
+- **Frontend**: Next.js 14, React, TypeScript
+- **Styling**: Tailwind CSS
+- **Authentication**: Clerk
+- **Database**: Supabase
+- **AI/ML**: OpenAI GPT-4 Vision
+
+## 👥 Target Users
+
+- **Health-Conscious Professionals**: Busy individuals who want accurate nutrition tracking without manual logging
+- **Fitness Beginners**: People new to nutrition who need simple, encouraging guidance
+
+## 🎯 Goals
+
+- Make nutrition tracking **10x easier** than traditional apps
+- Provide **personalized insights** based on individual goals
+- Create a **seamless user experience** from photo to recommendation
+
+## 📱 Core User Journey
+
+1. **Setup Profile** → Input basic info & goals
+2. **Take Photo** → Capture meal image
+3. **AI Analysis** → Get instant nutrition breakdown
+4. **Track Progress** → View dashboard & remaining targets
+5. **Get Suggestions** → Receive personalized meal recommendations
+
+## 🔮 Coming Soon
+
+- Micronutrient tracking
+- Restaurant menu integration
+- Wearable device sync
+- Social features & community
+- Barcode scanning
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+---
+
+**Made with ❤️ for healthier living**
