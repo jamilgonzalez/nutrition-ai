@@ -131,7 +131,7 @@ async function generateWithOpenRouter(
   })
 }
 
-async function generateWithOpenAI(text: string, voice: string) {
+async function generateWithOpenAI(text: string) {
   const openai = new OpenAI({
     apiKey: process.env.OPENAI_API_KEY,
   })
