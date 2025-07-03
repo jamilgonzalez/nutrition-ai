@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, Suspense } from 'react'
+import { useState, useEffect, useRef, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
@@ -18,19 +18,47 @@ function RecordMealContent() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isAnalyzing, setIsAnalyzing] = useState(false)
   
-  const { selectedImage, convertToBase64 } = useImageUpload()
+  const { selectedImage, previewUrl, handleImageChange, convertToBase64 } = useImageUpload()
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
-    // Get image from URL params if coming from camera
-    const imageParam = searchParams.get('image')
-    if (imageParam) {
-      setMealImage(decodeURIComponent(imageParam))
+    // Get image from sessionStorage if coming from camera
+    const imageId = searchParams.get('imageId')
+    if (imageId) {
+      const storedImage = sessionStorage.getItem(imageId)
+      if (storedImage) {
+        setMealImage(storedImage)
+        // Clean up sessionStorage after retrieving
+        sessionStorage.removeItem(imageId)
+      }
+    } else {
+      // Fallback: check for direct image param (for backward compatibility)
+      const imageParam = searchParams.get('image')
+      if (imageParam) {
+        setMealImage(decodeURIComponent(imageParam))
+      }
     }
   }, [searchParams])
 
   const handleVoiceTranscript = (text: string) => {
     setMealDetails(prev => prev + (prev ? ' ' : '') + text)
   }
+
+  const handleFileInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    handleImageChange(file || null)
+  }
+
+  const handleImageClick = () => {
+    fileInputRef.current?.click()
+  }
+
+  // Update mealImage when a new image is selected
+  useEffect(() => {
+    if (previewUrl) {
+      setMealImage(previewUrl)
+    }
+  }, [previewUrl])
 
   const handleSubmitMeal = async () => {
     if (!mealDetails.trim()) {
@@ -46,16 +74,9 @@ function RecordMealContent() {
       
       let nutritionData = undefined
       
-      // The image should already be in base64 format from navigation
-      let finalImageUrl = mealImage
+      // The image should already be in base64 format from sessionStorage
+      const finalImageUrl = mealImage
       console.log('Image URL type:', mealImage?.startsWith('data:') ? 'base64' : mealImage?.startsWith('blob:') ? 'blob' : 'other')
-      
-      // If somehow we still have a blob URL and selectedImage is available, convert it
-      if (mealImage && mealImage.startsWith('blob:') && selectedImage) {
-        console.log('Converting blob to base64...')
-        finalImageUrl = await convertToBase64(selectedImage)
-        console.log('Converted to base64')
-      }
 
       // Analyze with AI if we have an image
       if (finalImageUrl) {
@@ -162,6 +183,16 @@ function RecordMealContent() {
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-50">
+      {/* Hidden file input */}
+      <input
+        type="file"
+        ref={fileInputRef}
+        onChange={handleFileInputChange}
+        className="hidden"
+        accept="image/*"
+        capture="environment"
+      />
+
       {/* Header */}
       <div className="bg-white shadow-sm border-b px-4 py-3">
         <div className="flex items-center justify-between">
@@ -184,20 +215,35 @@ function RecordMealContent() {
         {/* Meal Image */}
         {mealImage ? (
           <div className="mb-6">
-            <div className="relative w-full h-64 rounded-lg overflow-hidden">
+            <div 
+              className="relative w-full h-64 rounded-lg overflow-hidden cursor-pointer group"
+              onClick={handleImageClick}
+            >
               <Image
                 src={mealImage}
                 alt="Meal to record"
                 fill
-                className="object-cover"
+                className="object-cover group-hover:opacity-90 transition-opacity"
               />
+              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
+                <div className="opacity-0 group-hover:opacity-100 transition-opacity bg-white/90 rounded-full p-3">
+                  <ImageIcon className="w-6 h-6 text-gray-700" />
+                </div>
+              </div>
             </div>
+            <p className="text-xs text-gray-500 mt-2 text-center">
+              Tap image to change photo
+            </p>
           </div>
         ) : (
-          <div className="mb-6 bg-white border-2 border-dashed border-gray-300 rounded-lg h-64 flex items-center justify-center">
+          <div 
+            className="mb-6 bg-white border-2 border-dashed border-gray-300 rounded-lg h-64 flex items-center justify-center cursor-pointer hover:border-gray-400 hover:bg-gray-50 transition-colors"
+            onClick={handleImageClick}
+          >
             <div className="text-center text-gray-500">
               <ImageIcon className="w-12 h-12 mx-auto mb-2 text-gray-400" />
-              <p className="text-sm">No image uploaded</p>
+              <p className="text-sm font-medium">Add meal photo</p>
+              <p className="text-xs mt-1">Tap to take photo or upload image</p>
             </div>
           </div>
         )}

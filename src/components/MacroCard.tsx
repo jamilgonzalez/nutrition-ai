@@ -202,6 +202,51 @@ export default function MacroCard() {
             </div>
           </div>
 
+          {/* Suggested Meal */}
+          {data.suggestedMeal && (
+            <div className="pt-4 border-t">
+              <div className="flex items-center justify-between mb-3">
+                <h4 className="font-semibold">Suggested Next Meal</h4>
+                <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+                  AI Recommended
+                </Badge>
+              </div>
+              <Card className="bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200 hover:shadow-sm transition-shadow">
+                <CardContent className="p-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex-1">
+                      <h5 className="font-medium text-blue-900 text-sm">
+                        {data.suggestedMeal.name}
+                      </h5>
+                      <p className="text-xs text-blue-700 mt-1">
+                        Perfect balance for your remaining macros
+                      </p>
+                      
+                      {/* Macro Pills for Suggested Meal */}
+                      <div className="flex items-center justify-between mt-2">
+                        <div className="flex-1"></div>
+                        <div className="flex items-center gap-1 text-xs">
+                          <span className="bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full font-medium">
+                            {data.suggestedMeal.calories}cal
+                          </span>
+                          <span className="bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-medium">
+                            {data.suggestedMeal.protein}p
+                          </span>
+                          <span className="bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-medium">
+                            {data.suggestedMeal.carbs}c
+                          </span>
+                          <span className="bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full font-medium">
+                            {data.suggestedMeal.fat}f
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          )}
+
           {/* Recorded Meals */}
           {recordedMeals.length > 0 && (
             <div className="pt-4 border-t">
@@ -275,51 +320,6 @@ export default function MacroCard() {
                   </Card>
                 ))}
               </div>
-            </div>
-          )}
-
-          {/* Suggested Meal */}
-          {data.suggestedMeal && (
-            <div className="pt-4 border-t">
-              <div className="flex items-center justify-between mb-3">
-                <h4 className="font-semibold">Suggested Next Meal</h4>
-                <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
-                  AI Recommended
-                </Badge>
-              </div>
-              <Card className="bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200 hover:shadow-sm transition-shadow">
-                <CardContent className="p-3">
-                  <div className="flex items-center justify-between">
-                    <div className="flex-1">
-                      <h5 className="font-medium text-blue-900 text-sm">
-                        {data.suggestedMeal.name}
-                      </h5>
-                      <p className="text-xs text-blue-700 mt-1">
-                        Perfect balance for your remaining macros
-                      </p>
-                      
-                      {/* Macro Pills for Suggested Meal */}
-                      <div className="flex items-center justify-between mt-2">
-                        <div className="flex-1"></div>
-                        <div className="flex items-center gap-1 text-xs">
-                          <span className="bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full font-medium">
-                            {data.suggestedMeal.calories}cal
-                          </span>
-                          <span className="bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-medium">
-                            {data.suggestedMeal.protein}p
-                          </span>
-                          <span className="bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-medium">
-                            {data.suggestedMeal.carbs}c
-                          </span>
-                          <span className="bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full font-medium">
-                            {data.suggestedMeal.fat}f
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
             </div>
           )}
         </CardContent>

@@ -22,7 +22,6 @@ export default function Home() {
   const [nutritionData, setNutritionData] = useState<NutritionData | null>(null)
   const [isAnalyzingStructured, setIsAnalyzingStructured] = useState(false)
   const [showStructuredView, setShowStructuredView] = useState(false)
-  const [shouldNavigateToRecord, setShouldNavigateToRecord] = useState(false)
   const imageUploadRef = useRef<ImageUploadRef>(null)
 
   const { messages, append, isLoading } = useChat({
@@ -40,25 +39,6 @@ export default function Home() {
 
   const { selectedImage, previewUrl, handleImageChange, convertToBase64 } =
     useImageUpload()
-
-  // Navigate to record-meal page when image is selected via mobile FAB
-  useEffect(() => {
-    const navigateToRecord = async () => {
-      if (shouldNavigateToRecord && selectedImage && previewUrl) {
-        try {
-          // Convert blob URL to base64 before navigation
-          const base64Image = await convertToBase64(selectedImage)
-          router.push(`/record-meal?image=${encodeURIComponent(base64Image)}`)
-        } catch (error) {
-          console.error('Error converting image to base64:', error)
-          // Fallback to blob URL
-          router.push(`/record-meal?image=${encodeURIComponent(previewUrl)}`)
-        }
-      }
-    }
-    
-    navigateToRecord()
-  }, [selectedImage, previewUrl, shouldNavigateToRecord, router, convertToBase64])
 
   const handleSendForAnalysis = async () => {
     if (!selectedImage) return
@@ -154,11 +134,6 @@ export default function Home() {
     .filter((msg) => msg.role === 'assistant')
     .pop()
 
-  const handleMobileImageUpload = () => {
-    setShouldNavigateToRecord(true)
-    imageUploadRef.current?.triggerUpload()
-  }
-
   return (
     <>
       <SignedIn>
@@ -229,9 +204,7 @@ export default function Home() {
             </div>
           </main>
 
-          <FloatingActionButton
-            onImageUpload={handleMobileImageUpload}
-          />
+          <FloatingActionButton />
         </div>
       </SignedIn>
     </>
