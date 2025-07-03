@@ -1,6 +1,6 @@
 'use client'
 
-import { SignedIn, SignedOut } from '@clerk/nextjs'
+import { SignedIn } from '@clerk/nextjs'
 import { Button } from '@/components/ui/button'
 import { useChat } from 'ai/react'
 import { useState, useRef } from 'react'
@@ -13,7 +13,6 @@ import ActionButtons from '@/components/ActionButtons'
 import AnalysisDisplay from '@/components/AnalysisDisplay'
 import MacroCard from '@/components/MacroCard'
 import FloatingActionButton from '@/components/FloatingActionButton'
-import LandingPage from '@/components/LandingPage'
 import { useSpeechRecognition } from '@/hooks/useSpeechRecognition'
 import { useImageUpload } from '@/hooks/useImageUpload'
 
@@ -138,87 +137,81 @@ export default function Home() {
   }
 
   return (
-    <>
-      <SignedOut>
-        <LandingPage />
-      </SignedOut>
+    <SignedIn>
+      <div className="flex flex-col min-h-screen">
+        <main className="flex-1 flex items-center justify-center p-4">
+          <div className="text-center max-w-4xl w-full">
+            {!showStructuredView ? (
+              <>
+                <MacroCard />
 
-      <SignedIn>
-        <div className="flex flex-col min-h-screen">
-          <main className="flex-1 flex items-center justify-center p-4">
-            <div className="text-center max-w-4xl w-full">
-              {!showStructuredView ? (
-                <>
-                  <MacroCard />
+                <h2 className="text-3xl font-bold mb-4">Upload a Meal</h2>
+                <p className="text-gray-500 mb-8">
+                  Upload a picture of your meal and optionally add voice context
+                  to get nutritional analysis.
+                </p>
 
-                  <h2 className="text-3xl font-bold mb-4">Upload a Meal</h2>
-                  <p className="text-gray-500 mb-8">
-                    Upload a picture of your meal and optionally add voice
-                    context to get nutritional analysis.
-                  </p>
+                <ImageUpload
+                  ref={imageUploadRef}
+                  selectedImage={selectedImage}
+                  previewUrl={previewUrl}
+                  onImageChange={handleImageChange}
+                />
 
-                  <ImageUpload
-                    ref={imageUploadRef}
-                    selectedImage={selectedImage}
-                    previewUrl={previewUrl}
-                    onImageChange={handleImageChange}
+                <ActionButtons
+                  selectedImage={selectedImage}
+                  isAnalyzing={isLoading}
+                  isAnalyzingStructured={isAnalyzingStructured}
+                  onQuickAnalysis={handleSendForAnalysis}
+                  onStructuredAnalysis={handleGetStructuredAnalysis}
+                />
+
+                <SpeechToText
+                  isRecording={isRecording}
+                  isListening={isListening}
+                  transcript={transcript}
+                  speechSupported={speechSupported}
+                  onToggleRecording={toggleRecording}
+                  onClearTranscript={clearTranscript}
+                  disabled={isLoading}
+                />
+
+                <AnalysisDisplay
+                  message={latestAnalysis || null}
+                  isLoading={isLoading}
+                />
+              </>
+            ) : (
+              <>
+                <div className="flex justify-between items-center mb-6">
+                  <Button
+                    onClick={() => setShowStructuredView(false)}
+                    variant="outline"
+                  >
+                    ← Back to Upload
+                  </Button>
+                  <h2 className="text-2xl font-bold">Nutrition Analysis</h2>
+                  <div></div>
+                </div>
+
+                {nutritionData && (
+                  <NutritionDisplay
+                    data={nutritionData}
+                    onSaveEntry={handleSaveNutritionEntry}
                   />
+                )}
+              </>
+            )}
+          </div>
+        </main>
 
-                  <ActionButtons
-                    selectedImage={selectedImage}
-                    isAnalyzing={isLoading}
-                    isAnalyzingStructured={isAnalyzingStructured}
-                    onQuickAnalysis={handleSendForAnalysis}
-                    onStructuredAnalysis={handleGetStructuredAnalysis}
-                  />
-
-                  <SpeechToText
-                    isRecording={isRecording}
-                    isListening={isListening}
-                    transcript={transcript}
-                    speechSupported={speechSupported}
-                    onToggleRecording={toggleRecording}
-                    onClearTranscript={clearTranscript}
-                    disabled={isLoading}
-                  />
-
-                  <AnalysisDisplay
-                    message={latestAnalysis || null}
-                    isLoading={isLoading}
-                  />
-                </>
-              ) : (
-                <>
-                  <div className="flex justify-between items-center mb-6">
-                    <Button
-                      onClick={() => setShowStructuredView(false)}
-                      variant="outline"
-                    >
-                      ← Back to Upload
-                    </Button>
-                    <h2 className="text-2xl font-bold">Nutrition Analysis</h2>
-                    <div></div>
-                  </div>
-
-                  {nutritionData && (
-                    <NutritionDisplay
-                      data={nutritionData}
-                      onSaveEntry={handleSaveNutritionEntry}
-                    />
-                  )}
-                </>
-              )}
-            </div>
-          </main>
-
-          <FloatingActionButton
-            onImageUpload={handleMobileImageUpload}
-            onToggleRecording={toggleRecording}
-            isRecording={isRecording}
-            speechSupported={speechSupported}
-          />
-        </div>
-      </SignedIn>
-    </>
+        <FloatingActionButton
+          onImageUpload={handleMobileImageUpload}
+          onToggleRecording={toggleRecording}
+          isRecording={isRecording}
+          speechSupported={speechSupported}
+        />
+      </div>
+    </SignedIn>
   )
 }

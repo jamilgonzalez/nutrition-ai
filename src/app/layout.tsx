@@ -55,9 +55,10 @@ export default function RootLayout({
             </div>
           </header>
           <SignedOut>
+            <OnboardingFlow />
             <LandingPage />
           </SignedOut>
-          <OnboardingFlow>{children}</OnboardingFlow>
+          {children}
         </body>
       </html>
     </ClerkProvider>

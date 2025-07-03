@@ -23,16 +23,14 @@ interface UserProfile {
   dietaryRestrictions: string[]
 }
 
-interface OnboardingFlowProps {
-  children: React.ReactNode
-}
-
-export default function OnboardingFlow({ children }: OnboardingFlowProps) {
+export default function OnboardingFlow() {
   const { user, isLoaded } = useUser()
   const [hasCompletedOnboarding, setHasCompletedOnboarding] = useState(false)
-  const [isCheckingOnboarding, setIsCheckingOnboarding] = useState(true)
+  const [isCheckingOnboarding, setIsCheckingOnboarding] = useState(false)
 
   const checkOnboardingStatus = async () => {
+    setIsCheckingOnboarding(true)
+
     try {
       if (!user?.id) return
 
@@ -40,9 +38,11 @@ export default function OnboardingFlow({ children }: OnboardingFlowProps) {
       const profile = await DatabaseStub.getUserProfile(user.id)
       setHasCompletedOnboarding(!!profile)
     } catch (error) {
+      console.log('Error checking onboarding status:', error)
       console.error('Error checking onboarding status:', error)
       setHasCompletedOnboarding(false)
     } finally {
+      console.log('Onboarding status checked for user:', user?.id)
       setIsCheckingOnboarding(false)
     }
   }
@@ -52,10 +52,6 @@ export default function OnboardingFlow({ children }: OnboardingFlowProps) {
       checkOnboardingStatus()
     }
   }, [isLoaded, user])
-
-  if (hasCompletedOnboarding) {
-    return <>{children}</>
-  }
 
   const handleOnboardingComplete = async (profile: UserProfile) => {
     try {
@@ -79,11 +75,7 @@ export default function OnboardingFlow({ children }: OnboardingFlowProps) {
     )
   }
 
-  if (!user) {
-    return <>{children}</>
-  }
-
-  if (!hasCompletedOnboarding) {
+  if (user && !hasCompletedOnboarding) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
         <OnboardingAgent
@@ -97,5 +89,5 @@ export default function OnboardingFlow({ children }: OnboardingFlowProps) {
     )
   }
 
-  return <>{children}</>
+  return <></>
 }
