@@ -3,6 +3,9 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
 import { Badge } from '@/components/ui/badge'
+import { getTodaysMeals, getTodaysNutritionSummary, type RecordedMeal } from '@/lib/mealStorage'
+import { useEffect, useState } from 'react'
+import Image from 'next/image'
 
 export interface DailyNutritionData {
   totalCalories: number
@@ -92,8 +95,20 @@ function MacroItem({ label, current, goal, unit }: MacroItemProps) {
 }
 
 export default function MacroCard() {
+  const [recordedMeals, setRecordedMeals] = useState<RecordedMeal[]>([])
+  const [nutritionSummary, setNutritionSummary] = useState({ calories: 0, protein: 0, carbs: 0, fat: 0 })
+  
+  useEffect(() => {
+    const meals = getTodaysMeals()
+    const summary = getTodaysNutritionSummary()
+    setRecordedMeals(meals)
+    setNutritionSummary(summary)
+  }, [])
+  
   const data = mockDailyData
-  const caloriesConsumedPercentage = ((data.dailyGoal - data.caloriesRemaining) / data.dailyGoal) * 100
+  const actualCaloriesConsumed = data.totalCalories + nutritionSummary.calories
+  const actualCaloriesRemaining = Math.max(data.dailyGoal - actualCaloriesConsumed, 0)
+  const caloriesConsumedPercentage = (actualCaloriesConsumed / data.dailyGoal) * 100
 
   return (
     <div className="w-full max-w-4xl mx-auto mb-8">
@@ -105,14 +120,14 @@ export default function MacroCard() {
           {/* Calories Overview */}
           <div className="text-center space-y-2">
             <div className="text-3xl font-bold text-green-600">
-              {data.caloriesRemaining}
+              {actualCaloriesRemaining}
             </div>
             <div className="text-sm text-muted-foreground">
               Calories remaining of {data.dailyGoal} goal
             </div>
             <Progress value={caloriesConsumedPercentage} className="h-3" />
             <div className="text-xs text-muted-foreground">
-              {data.totalCalories} consumed • {data.caloriesRemaining} remaining
+              {actualCaloriesConsumed} consumed • {actualCaloriesRemaining} remaining
             </div>
           </div>
 
@@ -143,6 +158,52 @@ export default function MacroCard() {
               unit="g"
             />
           </div>
+
+          {/* Recorded Meals */}
+          {recordedMeals.length > 0 && (
+            <div className="pt-4 border-t">
+              <div className="flex items-center justify-between mb-2">
+                <h4 className="font-semibold">Today&apos;s Meals</h4>
+                <Badge variant="outline">{recordedMeals.length} recorded</Badge>
+              </div>
+              <div className="space-y-2">
+                {recordedMeals.map((meal) => (
+                  <Card key={meal.id} className="bg-gradient-to-r from-gray-50 to-green-50 border-gray-200">
+                    <CardContent className="p-3">
+                      <div className="flex items-start gap-3">
+                        {meal.image && (
+                          <div className="relative w-12 h-12 rounded-lg overflow-hidden flex-shrink-0">
+                            <Image
+                              src={meal.image}
+                              alt={meal.name}
+                              fill
+                              className="object-cover"
+                            />
+                          </div>
+                        )}
+                        <div className="flex-1">
+                          <h5 className="font-medium text-gray-900">
+                            {meal.name}
+                          </h5>
+                          <p className="text-sm text-gray-600 mt-1">
+                            {new Date(meal.timestamp).toLocaleTimeString()}
+                          </p>
+                          {meal.nutritionData && (
+                            <div className="text-xs text-gray-500 mt-1 space-x-2">
+                              <span>{meal.nutritionData.calories} cal</span>
+                              <span>{meal.nutritionData.protein}g protein</span>
+                              <span>{meal.nutritionData.carbs}g carbs</span>
+                              <span>{meal.nutritionData.fat}g fat</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Suggested Meal */}
           {data.suggestedMeal && (

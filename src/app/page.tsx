@@ -3,23 +3,24 @@
 import { SignedIn } from '@clerk/nextjs'
 import { Button } from '@/components/ui/button'
 import { useChat } from 'ai/react'
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import NutritionDisplay, {
   type NutritionData,
 } from '@/components/NutritionDisplay'
 import ImageUpload, { type ImageUploadRef } from '@/components/ImageUpload'
-import SpeechToText from '@/components/SpeechToText'
-import ActionButtons from '@/components/ActionButtons'
-import AnalysisDisplay from '@/components/AnalysisDisplay'
 import MacroCard from '@/components/MacroCard'
 import FloatingActionButton from '@/components/FloatingActionButton'
 import { useSpeechRecognition } from '@/hooks/useSpeechRecognition'
 import { useImageUpload } from '@/hooks/useImageUpload'
 
 export default function Home() {
+  const router = useRouter()
   const [nutritionData, setNutritionData] = useState<NutritionData | null>(null)
   const [isAnalyzingStructured, setIsAnalyzingStructured] = useState(false)
   const [showStructuredView, setShowStructuredView] = useState(false)
+  const [shouldNavigateToRecord, setShouldNavigateToRecord] = useState(false)
+  const [refreshKey, setRefreshKey] = useState(0)
   const imageUploadRef = useRef<ImageUploadRef>(null)
 
   const { messages, append, isLoading } = useChat({
@@ -37,6 +38,23 @@ export default function Home() {
 
   const { selectedImage, previewUrl, handleImageChange, convertToBase64 } =
     useImageUpload()
+
+  // Navigate to record-meal page when image is selected via mobile FAB
+  useEffect(() => {
+    if (shouldNavigateToRecord && selectedImage && previewUrl) {
+      router.push(`/record-meal?image=${encodeURIComponent(previewUrl)}`)
+    }
+  }, [selectedImage, previewUrl, shouldNavigateToRecord, router])
+
+  // Refresh data when returning from record-meal page
+  useEffect(() => {
+    const handleFocus = () => {
+      setRefreshKey((prev) => prev + 1)
+    }
+
+    window.addEventListener('focus', handleFocus)
+    return () => window.removeEventListener('focus', handleFocus)
+  }, [])
 
   const handleSendForAnalysis = async () => {
     if (!selectedImage) return
@@ -133,6 +151,7 @@ export default function Home() {
     .pop()
 
   const handleMobileImageUpload = () => {
+    setShouldNavigateToRecord(true)
     imageUploadRef.current?.triggerUpload()
   }
 
@@ -143,13 +162,7 @@ export default function Home() {
           <div className="text-center max-w-4xl w-full">
             {!showStructuredView ? (
               <>
-                <MacroCard />
-
-                <h2 className="text-3xl font-bold mb-4">Upload a Meal</h2>
-                <p className="text-gray-500 mb-8">
-                  Upload a picture of your meal and optionally add voice context
-                  to get nutritional analysis.
-                </p>
+                <MacroCard key={refreshKey} />
 
                 <ImageUpload
                   ref={imageUploadRef}
@@ -158,7 +171,7 @@ export default function Home() {
                   onImageChange={handleImageChange}
                 />
 
-                <ActionButtons
+                {/* <ActionButtons
                   selectedImage={selectedImage}
                   isAnalyzing={isLoading}
                   isAnalyzingStructured={isAnalyzingStructured}
@@ -179,7 +192,7 @@ export default function Home() {
                 <AnalysisDisplay
                   message={latestAnalysis || null}
                   isLoading={isLoading}
-                />
+                /> */}
               </>
             ) : (
               <>
@@ -205,12 +218,7 @@ export default function Home() {
           </div>
         </main>
 
-        <FloatingActionButton
-          onImageUpload={handleMobileImageUpload}
-          onToggleRecording={toggleRecording}
-          isRecording={isRecording}
-          speechSupported={speechSupported}
-        />
+        <FloatingActionButton onImageUpload={handleMobileImageUpload} />
       </div>
     </SignedIn>
   )

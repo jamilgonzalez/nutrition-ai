@@ -3,7 +3,8 @@
 import { SignedIn } from '@clerk/nextjs'
 import { Button } from '@/components/ui/button'
 import { useChat } from 'ai/react'
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import NutritionDisplay, {
   type NutritionData,
 } from '@/components/NutritionDisplay'
@@ -17,9 +18,11 @@ import { useSpeechRecognition } from '@/hooks/useSpeechRecognition'
 import { useImageUpload } from '@/hooks/useImageUpload'
 
 export default function Home() {
+  const router = useRouter()
   const [nutritionData, setNutritionData] = useState<NutritionData | null>(null)
   const [isAnalyzingStructured, setIsAnalyzingStructured] = useState(false)
   const [showStructuredView, setShowStructuredView] = useState(false)
+  const [shouldNavigateToRecord, setShouldNavigateToRecord] = useState(false)
   const imageUploadRef = useRef<ImageUploadRef>(null)
 
   const { messages, append, isLoading } = useChat({
@@ -37,6 +40,13 @@ export default function Home() {
 
   const { selectedImage, previewUrl, handleImageChange, convertToBase64 } =
     useImageUpload()
+
+  // Navigate to record-meal page when image is selected via mobile FAB
+  useEffect(() => {
+    if (shouldNavigateToRecord && selectedImage && previewUrl) {
+      router.push(`/record-meal?image=${encodeURIComponent(previewUrl)}`)
+    }
+  }, [selectedImage, previewUrl, shouldNavigateToRecord, router])
 
   const handleSendForAnalysis = async () => {
     if (!selectedImage) return
@@ -133,6 +143,7 @@ export default function Home() {
     .pop()
 
   const handleMobileImageUpload = () => {
+    setShouldNavigateToRecord(true)
     imageUploadRef.current?.triggerUpload()
   }
 
@@ -208,9 +219,6 @@ export default function Home() {
 
           <FloatingActionButton
             onImageUpload={handleMobileImageUpload}
-            onToggleRecording={toggleRecording}
-            isRecording={isRecording}
-            speechSupported={speechSupported}
           />
         </div>
       </SignedIn>

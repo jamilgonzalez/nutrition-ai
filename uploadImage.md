@@ -3,6 +3,7 @@
 On mobile (primary use case for users), users will click the "+" button on bottom right to log a meal
 
 - Button should only be for taking pictures, remove the speech to text.
+- Button should open a menu (similar to how it does now) but the only option is a camera with text that says, "Record Meal".
 
 Once user clicks and takes OR uploads a photo, the user should be navigated a "Record Meal" page where they can add details via chat.
 
