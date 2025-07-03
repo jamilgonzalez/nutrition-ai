@@ -238,18 +238,7 @@ export function useEnhancedSpeechSynthesis(): UseEnhancedSpeechSynthesisReturn {
         setIsSpeaking(true)
         setProgress(0)
 
-        // For better audio analysis, we'll use OpenAI TTS if available
-        // Note: OpenRouter doesn't currently support TTS endpoints
-        const useEnhancedTTS =
-          typeof window !== 'undefined' &&
-          (window.localStorage.getItem('enableEnhancedTTS') === 'true' ||
-            process.env.NODE_ENV === 'development')
-
-        if (useEnhancedTTS) {
-          await speakWithEnhancedTTS(text)
-        } else {
-          await speakWithBrowser(text)
-        }
+        await speakWithEnhancedTTS(text)
       } catch (error) {
         console.error('Speech synthesis error:', error)
         // Fallback to browser speech synthesis
