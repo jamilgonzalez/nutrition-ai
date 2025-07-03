@@ -43,10 +43,22 @@ export default function Home() {
 
   // Navigate to record-meal page when image is selected via mobile FAB
   useEffect(() => {
-    if (shouldNavigateToRecord && selectedImage && previewUrl) {
-      router.push(`/record-meal?image=${encodeURIComponent(previewUrl)}`)
+    const navigateToRecord = async () => {
+      if (shouldNavigateToRecord && selectedImage && previewUrl) {
+        try {
+          // Convert blob URL to base64 before navigation
+          const base64Image = await convertToBase64(selectedImage)
+          router.push(`/record-meal?image=${encodeURIComponent(base64Image)}`)
+        } catch (error) {
+          console.error('Error converting image to base64:', error)
+          // Fallback to blob URL
+          router.push(`/record-meal?image=${encodeURIComponent(previewUrl)}`)
+        }
+      }
     }
-  }, [selectedImage, previewUrl, shouldNavigateToRecord, router])
+    
+    navigateToRecord()
+  }, [selectedImage, previewUrl, shouldNavigateToRecord, router, convertToBase64])
 
   const handleSendForAnalysis = async () => {
     if (!selectedImage) return

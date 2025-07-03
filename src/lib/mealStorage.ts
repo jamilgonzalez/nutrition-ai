@@ -63,6 +63,39 @@ export function saveMeal(meal: Omit<RecordedMeal, 'id' | 'timestamp'>): Recorded
   }
 }
 
+export function updateMeal(id: string, updates: Partial<Omit<RecordedMeal, 'id' | 'timestamp'>>): RecordedMeal | null {
+  try {
+    const existing = JSON.parse(localStorage.getItem(MEALS_STORAGE_KEY) || '[]')
+    const mealIndex = existing.findIndex((meal: RecordedMeal) => meal.id === id)
+    
+    if (mealIndex === -1) {
+      throw new Error('Meal not found')
+    }
+    
+    const updatedMeal = {
+      ...existing[mealIndex],
+      ...updates
+    }
+    
+    existing[mealIndex] = updatedMeal
+    localStorage.setItem(MEALS_STORAGE_KEY, JSON.stringify(existing))
+    return updatedMeal
+  } catch (error) {
+    console.error('Error updating meal:', error)
+    return null
+  }
+}
+
+export function getMealById(id: string): RecordedMeal | null {
+  try {
+    const existing = JSON.parse(localStorage.getItem(MEALS_STORAGE_KEY) || '[]')
+    return existing.find((meal: RecordedMeal) => meal.id === id) || null
+  } catch (error) {
+    console.error('Error getting meal:', error)
+    return null
+  }
+}
+
 export function getTodaysNutritionSummary() {
   const meals = getTodaysMeals()
   
