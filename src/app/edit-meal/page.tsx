@@ -9,6 +9,7 @@ import PressHoldVoiceButton from '@/components/PressHoldVoiceButton'
 import Image from 'next/image'
 import { getMealById, updateMeal, type RecordedMeal } from '@/lib/mealStorage'
 import { useImageUpload } from '@/hooks/useImageUpload'
+import ImageOptionsModal from '@/components/ImageOptionsModal'
 
 function EditMealContent() {
   const router = useRouter()
@@ -22,12 +23,6 @@ function EditMealContent() {
   const [showImageOptions, setShowImageOptions] = useState(false)
   
   const { selectedImage, previewUrl, handleImageChange, convertToBase64 } = useImageUpload()
-  const fileInputRef = useRef<HTMLInputElement>(null)
-  
-  const handleFileInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0]
-    handleImageChange(file || null)
-  }
 
   useEffect(() => {
     // Get meal ID from URL params
@@ -59,9 +54,8 @@ function EditMealContent() {
     setMealDetails(prev => prev + (prev ? ' ' : '') + text)
   }
 
-  const handleImageUpload = () => {
-    fileInputRef.current?.click()
-    setShowImageOptions(false)
+  const handleImageUpload = (file: File | null) => {
+    handleImageChange(file)
   }
 
   const handleRemoveImage = () => {
@@ -205,15 +199,6 @@ function EditMealContent() {
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-50">
-      {/* Hidden file input */}
-      <input
-        type="file"
-        ref={fileInputRef}
-        onChange={handleFileInputChange}
-        className="hidden"
-        accept="image/*"
-        capture="environment"
-      />
 
       {/* Header */}
       <div className="bg-white shadow-sm border-b px-4 py-3">
@@ -278,30 +263,13 @@ function EditMealContent() {
           )}
 
           {/* Image Options Modal */}
-          {showImageOptions && (
-            <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-              <div className="bg-white rounded-lg p-6 m-4 w-full max-w-sm">
-                <h3 className="text-lg font-semibold mb-4">Update Photo</h3>
-                <div className="space-y-3">
-                  <Button
-                    onClick={handleImageUpload}
-                    className="w-full justify-start"
-                    variant="outline"
-                  >
-                    <Camera className="w-4 h-4 mr-2" />
-                    Take Photo / Choose Image
-                  </Button>
-                  <Button
-                    onClick={() => setShowImageOptions(false)}
-                    className="w-full"
-                    variant="secondary"
-                  >
-                    Cancel
-                  </Button>
-                </div>
-              </div>
-            </div>
-          )}
+          <ImageOptionsModal
+            isOpen={showImageOptions}
+            onClose={() => setShowImageOptions(false)}
+            onImageChange={handleImageUpload}
+            showRemoveOption={!!mealImage}
+            onRemoveImage={handleRemoveImage}
+          />
         </div>
 
         {/* Meal Details Input */}

@@ -45,7 +45,7 @@ export async function getCurrentLocation(): Promise<UserLocation> {
 }
 ```
 
-### 2. Restaurant Search Integration
+### 2. LLM-Based Restaurant Search
 ```typescript
 // services/restaurantSearch.ts
 export interface Restaurant {
@@ -72,21 +72,30 @@ export interface MenuItem {
 
 export async function searchNearbyRestaurants(
   location: UserLocation,
-  radius: number = 5000
-): Promise<Restaurant[]> {
-  // Integration with Google Places API or similar
-  const response = await fetch(`/api/restaurants/search`, {
+  cityName: string,
+  macroTargets: MacroTargets
+): Promise<MenuItem[]> {
+  // Use LLM web search to find restaurants and menu items
+  const searchQuery = `restaurants near ${cityName} with healthy options calories ${macroTargets.calories.min}-${macroTargets.calories.max} protein ${macroTargets.protein.min}g+ nutrition information menu`;
+  
+  const response = await fetch(`/api/llm-search`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      latitude: location.latitude,
-      longitude: location.longitude,
-      radius,
-      type: 'restaurant'
+      query: searchQuery,
+      context: `Find restaurants and specific menu items with nutrition information that fit these macro targets: ${JSON.stringify(macroTargets)}`
     })
   });
   
-  return response.json();
+  const searchResults = await response.json();
+  return parseRestaurantResults(searchResults, macroTargets);
+}
+
+function parseRestaurantResults(searchResults: string, macroTargets: MacroTargets): MenuItem[] {
+  // Parse LLM response into structured menu items
+  // This would extract restaurant names, menu items, and nutrition info
+  // from the search results
+  return [];
 }
 ```
 
@@ -170,19 +179,29 @@ export default function MealSuggestions({ userMacros }: { userMacros: MacroTarge
 }
 ```
 
-## API Integrations Needed
+## Current Implementation: LLM Web Search
 
-### Google Places API
-- Restaurant search by location
-- Business details (hours, rating, contact)
-- Photos and reviews
+### LLM Search API
+- Use web search to find restaurants and menu items near user location
+- Search for specific nutrition information that matches macro targets
+- Parse results to extract structured restaurant and menu data
+- Simple to implement, no API keys or rate limits initially
 
-### Restaurant Menu APIs
-- **Nutritionix API** - Comprehensive nutrition database
+### Benefits of LLM Approach
+- **Quick to implement** - No need for multiple API integrations
+- **Comprehensive coverage** - Can find information from any publicly available source
+- **Flexible queries** - Can search for specific macro combinations
+- **Cost-effective** - No additional API costs beyond LLM usage
+
+## TODO: Future API Integrations
+
+### Phase 2: Direct API Integration
+- **Google Places API** - Restaurant search by location
+- **Nutritionix API** - Comprehensive nutrition database  
 - **Spoonacular API** - Restaurant menu items with nutrition
 - **Yelp Fusion API** - Restaurant data and basic menu info
 
-### Alternative: Web Scraping
+### Phase 3: Web Scraping Fallback
 For chains without API access:
 - McDonald's, Burger King, Subway nutrition pages
 - Cache results to avoid repeated requests
@@ -261,19 +280,31 @@ For chains without API access:
 - Clear location data option
 
 ### Performance
-- Cache restaurant data locally
+- Cache LLM search results locally
 - Debounce location updates
 - Lazy load menu items
-- Optimize API calls with request batching
+- Optimize search queries for better results
 
 ### Error Handling
 - Graceful fallback when location unavailable
-- Handle API rate limits
+- Handle LLM search failures
 - Offline mode with cached suggestions
 - User-friendly error messages
 
 ## Future Enhancements
 
+### Phase 2: Advanced API Integration
+1. **Google Places API Integration** - More accurate restaurant locations and details
+2. **Nutritionix API Integration** - Comprehensive nutrition database access
+3. **Spoonacular API Integration** - Detailed menu items with nutrition
+4. **Yelp Fusion API Integration** - Restaurant ratings and reviews
+
+### Phase 3: Web Scraping Implementation
+1. **Fast Food Chain Scraping** - McDonald's, Burger King, Subway nutrition pages
+2. **Data Caching Strategy** - Store scraped data locally with periodic updates
+3. **Rate Limiting** - Implement proper delays to avoid being blocked
+
+### Phase 4: User Experience Enhancements
 1. **Dietary Restrictions** - Filter by vegetarian, gluten-free, etc.
 2. **Price Filtering** - Budget-conscious suggestions
 3. **Delivery Integration** - Direct ordering through DoorDash/Uber Eats

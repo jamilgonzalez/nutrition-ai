@@ -9,6 +9,7 @@ import PressHoldVoiceButton from '@/components/PressHoldVoiceButton'
 import Image from 'next/image'
 import { saveMeal } from '@/lib/mealStorage'
 import { useImageUpload } from '@/hooks/useImageUpload'
+import ImageOptionsModal from '@/components/ImageOptionsModal'
 
 function RecordMealContent() {
   const router = useRouter()
@@ -17,9 +18,9 @@ function RecordMealContent() {
   const [mealImage, setMealImage] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isAnalyzing, setIsAnalyzing] = useState(false)
+  const [showImageOptions, setShowImageOptions] = useState(false)
   
   const { selectedImage, previewUrl, handleImageChange, convertToBase64 } = useImageUpload()
-  const fileInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     // Get image from sessionStorage if coming from camera
@@ -44,13 +45,12 @@ function RecordMealContent() {
     setMealDetails(prev => prev + (prev ? ' ' : '') + text)
   }
 
-  const handleFileInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0]
-    handleImageChange(file || null)
+  const handleImageUpload = (file: File | null) => {
+    handleImageChange(file)
   }
 
   const handleImageClick = () => {
-    fileInputRef.current?.click()
+    setShowImageOptions(true)
   }
 
   // Update mealImage when a new image is selected
@@ -183,14 +183,11 @@ function RecordMealContent() {
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-50">
-      {/* Hidden file input */}
-      <input
-        type="file"
-        ref={fileInputRef}
-        onChange={handleFileInputChange}
-        className="hidden"
-        accept="image/*"
-        capture="environment"
+      {/* Image Options Modal */}
+      <ImageOptionsModal
+        isOpen={showImageOptions}
+        onClose={() => setShowImageOptions(false)}
+        onImageChange={handleImageUpload}
       />
 
       {/* Header */}
