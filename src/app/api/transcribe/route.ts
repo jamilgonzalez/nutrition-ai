@@ -1,14 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
+import OpenAI from 'openai'
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-let openai: any = null
+let openai: OpenAI | null = null
 
 // Initialize OpenAI directly for transcription
-// Note: OpenRouter doesn't support Whisper transcription endpoints
 if (process.env.OPENAI_API_KEY) {
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const OpenAI = require('openai')
-
   openai = new OpenAI({
     apiKey: process.env.OPENAI_API_KEY,
   })
@@ -18,13 +14,6 @@ export async function POST(request: NextRequest) {
   try {
     const formData = await request.formData()
     const audioFile = formData.get('audio') as File
-
-    if (!audioFile) {
-      return NextResponse.json(
-        { error: 'No audio file provided' },
-        { status: 400 }
-      )
-    }
 
     if (!openai) {
       return NextResponse.json(
@@ -36,18 +25,24 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    if (!audioFile) {
+      return NextResponse.json(
+        { error: 'No audio file provided' },
+        { status: 400 }
+      )
+    }
+
     // Convert the File to a format OpenAI can accept
     const buffer = await audioFile.arrayBuffer()
     const file = new File([buffer], 'audio.webm', { type: audioFile.type })
 
     // Transcribe using Whisper via OpenAI directly
-    // Note: OpenRouter doesn't support transcription endpoints
     const transcription = await openai.audio.transcriptions.create({
       file: file,
-      model: 'whisper-1', // OpenAI's Whisper model
+      model: 'whisper-1',
       language: 'en',
       response_format: 'json',
-      temperature: 0.2, // Lower temperature for more consistent results
+      temperature: 0.2,
     })
 
     return NextResponse.json({

@@ -11,11 +11,7 @@ interface ModelInfo {
 // Enhanced TTS with multiple model options via OpenRouter
 export async function POST(request: NextRequest) {
   try {
-    const {
-      text,
-      voice = 'nova',
-      model = 'openai/tts-1',
-    } = await request.json()
+    const { text } = await request.json()
 
     if (!text) {
       return NextResponse.json({ error: 'No text provided' }, { status: 400 })
@@ -31,41 +27,8 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // OpenRouter provides access to multiple TTS models
-    const availableModels = {
-      'openai/tts-1': {
-        provider: 'OpenAI',
-        quality: 'standard',
-        speed: 'fast',
-        cost: 'low',
-      },
-      'openai/tts-1-hd': {
-        provider: 'OpenAI',
-        quality: 'high',
-        speed: 'medium',
-        cost: 'medium',
-      },
-      // Add other TTS models as they become available on OpenRouter
-    }
-
-    // Note: OpenRouter doesn't currently support TTS endpoints
-    // Fall back to direct OpenAI for TTS functionality
     if (process.env.OPENAI_API_KEY) {
       return await generateWithOpenAI(text)
-    } else if (process.env.OPENROUTER_API_KEY) {
-      // Try OpenRouter first, but it will likely fail for TTS
-      try {
-        return await generateWithOpenRouter(text, voice, model, availableModels)
-      } catch {
-        console.log('OpenRouter TTS not available, this is expected')
-        return NextResponse.json(
-          {
-            error:
-              'TTS not available. OpenRouter does not currently support TTS endpoints. Please set OPENAI_API_KEY for TTS functionality.',
-          },
-          { status: 503 }
-        )
-      }
     } else {
       return NextResponse.json(
         {
@@ -92,43 +55,6 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     )
   }
-}
-
-async function generateWithOpenRouter(
-  text: string,
-  voice: string,
-  model: string,
-  availableModels: Record<string, ModelInfo>
-) {
-  const openai = new OpenAI({
-    apiKey: process.env.OPENROUTER_API_KEY,
-    baseURL: 'https://openrouter.ai/api/v1',
-    defaultHeaders: {
-      'HTTP-Referer':
-        process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000',
-      'X-Title': 'Nutrition AI - Enhanced TTS',
-    },
-  })
-
-  // Use OpenRouter's model routing
-  const mp3 = await openai.audio.speech.create({
-    model: model.replace('openai/', ''), // OpenRouter handles the provider prefix
-    voice: voice as 'alloy' | 'echo' | 'fable' | 'onyx' | 'nova' | 'shimmer',
-    input: text,
-    response_format: 'mp3',
-    speed: 6.0,
-  })
-
-  const buffer = Buffer.from(await mp3.arrayBuffer())
-
-  return new NextResponse(buffer, {
-    headers: {
-      'Content-Type': 'audio/mpeg',
-      'Cache-Control': 'public, max-age=3600', // Cache for 1 hour
-      'X-Model-Used': model,
-      'X-Provider': availableModels[model]?.provider || 'OpenRouter',
-    },
-  })
 }
 
 async function generateWithOpenAI(text: string) {

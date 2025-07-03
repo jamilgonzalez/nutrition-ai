@@ -35,7 +35,6 @@ export function useEnhancedSpeechSynthesis(): UseEnhancedSpeechSynthesisReturn {
   const speakWithEnhancedTTS = useCallback(async (text: string) => {
     try {
       // Call our enhanced TTS API endpoint (uses OpenAI)
-      // Note: OpenRouter doesn't currently support TTS endpoints
       const response = await fetch('/api/tts-enhanced', {
         method: 'POST',
         headers: {

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useUser } from '@clerk/nextjs'
-import OnboardingAgent from './OnboardingAgent'
+import { OnboardingAgent } from './OnboardingAgent'
 import DatabaseStub from '@/lib/database'
 
 interface UserProfile {
@@ -11,7 +11,13 @@ interface UserProfile {
   sex: 'male' | 'female' | 'other' | null
   height: number | null
   weight: number | null
-  activityLevel: 'sedentary' | 'light' | 'moderate' | 'active' | 'very_active' | null
+  activityLevel:
+    | 'sedentary'
+    | 'light'
+    | 'moderate'
+    | 'active'
+    | 'very_active'
+    | null
   goals: string[]
   healthConditions: string[]
   dietaryRestrictions: string[]
@@ -26,16 +32,10 @@ export default function OnboardingFlow({ children }: OnboardingFlowProps) {
   const [hasCompletedOnboarding, setHasCompletedOnboarding] = useState(false)
   const [isCheckingOnboarding, setIsCheckingOnboarding] = useState(true)
 
-  useEffect(() => {
-    if (isLoaded && user) {
-      checkOnboardingStatus()
-    }
-  }, [isLoaded, user])
-
   const checkOnboardingStatus = async () => {
     try {
       if (!user?.id) return
-      
+
       // Check if user has completed onboarding using database stub
       const profile = await DatabaseStub.getUserProfile(user.id)
       setHasCompletedOnboarding(!!profile)
@@ -47,13 +47,23 @@ export default function OnboardingFlow({ children }: OnboardingFlowProps) {
     }
   }
 
+  useEffect(() => {
+    if (isLoaded && user) {
+      checkOnboardingStatus()
+    }
+  }, [isLoaded, user])
+
+  if (hasCompletedOnboarding) {
+    return <>{children}</>
+  }
+
   const handleOnboardingComplete = async (profile: UserProfile) => {
     try {
       if (!user?.id) return
-      
+
       // Save user profile using database stub
       await DatabaseStub.saveUserProfile(user.id, profile)
-      
+
       console.log('Onboarding completed for user:', user.id)
       setHasCompletedOnboarding(true)
     } catch (error) {
@@ -79,7 +89,7 @@ export default function OnboardingFlow({ children }: OnboardingFlowProps) {
         <OnboardingAgent
           userProfile={{
             firstName: user.firstName || undefined,
-            lastName: user.lastName || undefined
+            lastName: user.lastName || undefined,
           }}
           onComplete={handleOnboardingComplete}
         />

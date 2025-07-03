@@ -36,12 +36,8 @@ export default function Home() {
     clearTranscript,
   } = useSpeechRecognition()
 
-  const {
-    selectedImage,
-    previewUrl,
-    handleImageChange,
-    convertToBase64,
-  } = useImageUpload()
+  const { selectedImage, previewUrl, handleImageChange, convertToBase64 } =
+    useImageUpload()
 
   const handleSendForAnalysis = async () => {
     if (!selectedImage) return
@@ -153,11 +149,11 @@ export default function Home() {
               {!showStructuredView ? (
                 <>
                   <MacroCard />
-                  
+
                   <h2 className="text-3xl font-bold mb-4">Upload a Meal</h2>
                   <p className="text-gray-500 mb-8">
-                    Upload a picture of your meal and optionally add voice context
-                    to get nutritional analysis.
+                    Upload a picture of your meal and optionally add voice
+                    context to get nutritional analysis.
                   </p>
 
                   <ImageUpload
@@ -213,7 +209,7 @@ export default function Home() {
               )}
             </div>
           </main>
-          
+
           <FloatingActionButton
             onImageUpload={handleMobileImageUpload}
             onToggleRecording={toggleRecording}
