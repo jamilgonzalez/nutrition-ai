@@ -1,14 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import OpenAI from 'openai'
 
-interface ModelInfo {
-  provider: string
-  quality: string
-  speed: string
-  cost: string
-}
-
-// Enhanced TTS with multiple model options via OpenRouter
 export async function POST(request: NextRequest) {
   try {
     const { text } = await request.json()
@@ -79,33 +71,5 @@ async function generateWithOpenAI(text: string) {
       'X-Model-Used': 'tts-1',
       'X-Provider': 'OpenAI Direct',
     },
-  })
-}
-
-// GET endpoint to list available models
-export async function GET() {
-  const models = {
-    'openai/tts-1': {
-      name: 'OpenAI TTS-1 (Standard)',
-      provider: 'OpenAI',
-      quality: 'standard',
-      speed: 'fast',
-      cost: 'low',
-      voices: ['alloy', 'echo', 'fable', 'onyx', 'nova', 'shimmer'],
-    },
-    'openai/tts-1-hd': {
-      name: 'OpenAI TTS-1-HD (High Quality)',
-      provider: 'OpenAI',
-      quality: 'high',
-      speed: 'medium',
-      cost: 'medium',
-      voices: ['alloy', 'echo', 'fable', 'onyx', 'nova', 'shimmer'],
-    },
-  }
-
-  return NextResponse.json({
-    models,
-    default: 'openai/tts-1',
-    recommended: 'openai/tts-1-hd',
   })
 }

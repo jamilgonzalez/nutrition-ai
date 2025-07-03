@@ -39,7 +39,7 @@ export function WebSearch({ query, onComplete }: WebSearchProps) {
   const performSearch = async () => {
     setIsSearching(true)
     setError(null)
-    
+
     try {
       const response = await fetch('/api/search', {
         method: 'POST',
@@ -58,7 +58,7 @@ export function WebSearch({ query, onComplete }: WebSearchProps) {
     } catch (err) {
       console.error('Search error:', err)
       setError('Failed to fetch calorie recommendations. Please try again.')
-      
+
       // Fallback with mock data for demo purposes
       setResults({
         dailyCalories: 2200,
@@ -67,19 +67,22 @@ export function WebSearch({ query, onComplete }: WebSearchProps) {
         fat: 73,
         sources: [
           {
-            title: "Calorie Calculator - Mayo Clinic",
-            url: "https://www.mayoclinic.org/healthy-lifestyle/weight-loss/in-depth/calories/art-20048890",
-            snippet: "Calculate your daily calorie needs based on age, sex, height, weight, and activity level.",
-            score: 0.95
+            title: 'Calorie Calculator - Mayo Clinic',
+            url: 'https://www.mayoclinic.org/healthy-lifestyle/weight-loss/in-depth/calories/art-20048890',
+            snippet:
+              'Calculate your daily calorie needs based on age, sex, height, weight, and activity level.',
+            score: 0.95,
           },
           {
-            title: "Dietary Guidelines for Americans - USDA",
-            url: "https://www.dietaryguidelines.gov/",
-            snippet: "Official dietary guidelines including calorie recommendations for different demographics.",
-            score: 0.92
-          }
+            title: 'Dietary Guidelines for Americans - USDA',
+            url: 'https://www.dietaryguidelines.gov/',
+            snippet:
+              'Official dietary guidelines including calorie recommendations for different demographics.',
+            score: 0.92,
+          },
         ],
-        summary: "Based on your profile, your estimated daily calorie needs are around 2,200 calories. This includes approximately 165g protein (30%), 275g carbs (50%), and 73g fat (20%). These recommendations are based on established nutritional guidelines for your age, sex, activity level, and goals."
+        summary:
+          'Based on your profile, your estimated daily calorie needs are around 2,200 calories. This includes approximately 165g protein (30%), 275g carbs (50%), and 73g fat (20%). These recommendations are based on established nutritional guidelines for your age, sex, activity level, and goals.',
       })
     } finally {
       setIsSearching(false)
@@ -131,28 +134,36 @@ export function WebSearch({ query, onComplete }: WebSearchProps) {
         <CardContent>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
             <div className="bg-blue-50 p-4 rounded-lg text-center">
-              <div className="text-2xl font-bold text-blue-600">{results.dailyCalories}</div>
+              <div className="text-2xl font-bold text-blue-600">
+                {results.dailyCalories}
+              </div>
               <div className="text-sm text-blue-800">Daily Calories</div>
             </div>
             <div className="bg-green-50 p-4 rounded-lg text-center">
-              <div className="text-2xl font-bold text-green-600">{results.protein}g</div>
+              <div className="text-2xl font-bold text-green-600">
+                {results.protein}g
+              </div>
               <div className="text-sm text-green-800">Protein</div>
             </div>
             <div className="bg-yellow-50 p-4 rounded-lg text-center">
-              <div className="text-2xl font-bold text-yellow-600">{results.carbs}g</div>
+              <div className="text-2xl font-bold text-yellow-600">
+                {results.carbs}g
+              </div>
               <div className="text-sm text-yellow-800">Carbs</div>
             </div>
             <div className="bg-purple-50 p-4 rounded-lg text-center">
-              <div className="text-2xl font-bold text-purple-600">{results.fat}g</div>
+              <div className="text-2xl font-bold text-purple-600">
+                {results.fat}g
+              </div>
               <div className="text-sm text-purple-800">Fat</div>
             </div>
           </div>
-          
+
           <div className="bg-gray-50 p-4 rounded-lg mb-6">
             <h4 className="font-semibold mb-2">Summary</h4>
             <p className="text-sm text-gray-700">{results.summary}</p>
           </div>
-          
+
           <Button onClick={onComplete} className="w-full">
             Complete Setup
           </Button>
@@ -170,9 +181,9 @@ export function WebSearch({ query, onComplete }: WebSearchProps) {
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex-1">
                     <h4 className="font-medium mb-2 text-blue-600">
-                      <a 
-                        href={source.url} 
-                        target="_blank" 
+                      <a
+                        href={source.url}
+                        target="_blank"
                         rel="noopener noreferrer"
                         className="hover:underline flex items-center gap-1"
                       >
@@ -180,7 +191,9 @@ export function WebSearch({ query, onComplete }: WebSearchProps) {
                         <ExternalLink className="w-4 h-4" />
                       </a>
                     </h4>
-                    <p className="text-sm text-gray-600 mb-2">{source.snippet}</p>
+                    <p className="text-sm text-gray-600 mb-2">
+                      {source.snippet}
+                    </p>
                     <div className="flex items-center gap-2">
                       <Badge variant="secondary">
                         Relevance: {Math.round(source.score * 100)}%
@@ -191,12 +204,14 @@ export function WebSearch({ query, onComplete }: WebSearchProps) {
               </div>
             ))}
           </div>
-          
+
           <div className="mt-4 p-3 bg-yellow-50 rounded-lg">
             <p className="text-sm text-yellow-800">
-              <strong>Disclaimer:</strong> These recommendations are for informational purposes only. 
-              Please consult with a healthcare professional or registered dietitian for personalized 
-              nutritional advice, especially if you have health conditions or specific dietary needs.
+              <strong>Disclaimer:</strong> These recommendations are for
+              informational purposes only. Please consult with a healthcare
+              professional or registered dietitian for personalized nutritional
+              advice, especially if you have health conditions or specific
+              dietary needs.
             </p>
           </div>
         </CardContent>

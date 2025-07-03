@@ -142,6 +142,7 @@ export default function Home() {
       <SignedOut>
         <LandingPage />
       </SignedOut>
+
       <SignedIn>
         <div className="flex flex-col min-h-screen">
           <main className="flex-1 flex items-center justify-center p-4">

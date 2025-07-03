@@ -10,6 +10,7 @@ import {
 import { Geist, Geist_Mono } from 'next/font/google'
 import './styles/globals.css'
 import OnboardingFlow from '@/components/OnboardingFlow'
+import LandingPage from '@/components/LandingPage'
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -53,6 +54,9 @@ export default function RootLayout({
               </SignedIn>
             </div>
           </header>
+          <SignedOut>
+            <LandingPage />
+          </SignedOut>
           <OnboardingFlow>{children}</OnboardingFlow>
         </body>
       </html>
