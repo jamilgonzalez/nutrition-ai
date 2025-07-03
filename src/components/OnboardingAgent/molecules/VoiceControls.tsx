@@ -32,7 +32,6 @@ export function VoiceControls({
     if (isRecording) return 'Recording with Whisper...'
     if (isProcessing) return 'Processing speech...'
     if (speechError) return `Error: ${speechError}`
-    if (!isSpeaking) return 'Ready - I\'ll start listening after I finish speaking'
     return 'Ready'
   }
 
@@ -46,10 +45,7 @@ export function VoiceControls({
         />
       </div>
 
-      <StatusIndicator 
-        status={getStatus()} 
-        message={getStatusMessage()} 
-      />
+      {/* <StatusIndicator status={getStatus()} message={getStatusMessage()} /> */}
 
       {transcript && (
         <div className="bg-white p-3 rounded-lg border">
@@ -68,11 +64,7 @@ export function VoiceControls({
       )}
 
       <div className="text-center">
-        <Button
-          variant="outline"
-          onClick={onUseTextInstead}
-          size="sm"
-        >
+        <Button variant="outline" onClick={onUseTextInstead} size="sm">
           Use Text Instead
         </Button>
       </div>

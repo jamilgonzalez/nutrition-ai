@@ -7,12 +7,13 @@ import { Button } from '@/components/ui/button'
 import {
   getTodaysMeals,
   getTodaysNutritionSummary,
+  deleteMeal,
   type RecordedMeal,
 } from '@/lib/mealStorage'
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
-import { Edit2 } from 'lucide-react'
+import { Edit2, Trash2 } from 'lucide-react'
 import LocationBasedSuggestions from './LocationBasedSuggestions'
 
 export interface DailyNutritionData {
@@ -68,6 +69,7 @@ export default function MacroCard() {
     carbs: 0,
     fat: 0,
   })
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null)
 
   useEffect(() => {
     const meals = getTodaysMeals()
@@ -80,6 +82,30 @@ export default function MacroCard() {
 
   const handleEditMeal = (mealId: string) => {
     router.push(`/edit-meal?id=${mealId}`)
+  }
+
+  const handleDeleteMeal = (mealId: string) => {
+    setDeleteConfirmId(mealId)
+  }
+
+  const confirmDelete = () => {
+    if (deleteConfirmId) {
+      const success = deleteMeal(deleteConfirmId)
+      if (success) {
+        // Refresh the meals and nutrition summary
+        const meals = getTodaysMeals()
+        const summary = getTodaysNutritionSummary()
+        setRecordedMeals(meals)
+        setNutritionSummary(summary)
+      } else {
+        alert('Failed to delete meal. Please try again.')
+      }
+      setDeleteConfirmId(null)
+    }
+  }
+
+  const cancelDelete = () => {
+    setDeleteConfirmId(null)
   }
 
   // Calculate actual consumed values from real meal data
@@ -161,12 +187,14 @@ export default function MacroCard() {
                     className="h-full transition-all duration-300"
                     style={{
                       width: `${Math.min(
-                        (dailyData.protein.current / dailyData.protein.goal) * 100,
+                        (dailyData.protein.current / dailyData.protein.goal) *
+                          100,
                         100
                       )}%`,
                       backgroundColor: getGradientColor(
                         Math.min(
-                          (dailyData.protein.current / dailyData.protein.goal) * 100,
+                          (dailyData.protein.current / dailyData.protein.goal) *
+                            100,
                           100
                         )
                       ),
@@ -191,7 +219,8 @@ export default function MacroCard() {
                       )}%`,
                       backgroundColor: getGradientColor(
                         Math.min(
-                          (dailyData.carbs.current / dailyData.carbs.goal) * 100,
+                          (dailyData.carbs.current / dailyData.carbs.goal) *
+                            100,
                           100
                         )
                       ),
@@ -215,7 +244,10 @@ export default function MacroCard() {
                         100
                       )}%`,
                       backgroundColor: getGradientColor(
-                        Math.min((dailyData.fat.current / dailyData.fat.goal) * 100, 100)
+                        Math.min(
+                          (dailyData.fat.current / dailyData.fat.goal) * 100,
+                          100
+                        )
                       ),
                     }}
                   />
@@ -238,7 +270,8 @@ export default function MacroCard() {
                       )}%`,
                       backgroundColor: getGradientColor(
                         Math.min(
-                          (dailyData.sugar.current / dailyData.sugar.goal) * 100,
+                          (dailyData.sugar.current / dailyData.sugar.goal) *
+                            100,
                           100
                         )
                       ),
@@ -300,6 +333,14 @@ export default function MacroCard() {
                               >
                                 <Edit2 className="w-3 h-3" />
                               </Button>
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                onClick={() => handleDeleteMeal(meal.id)}
+                                className="h-6 w-6 p-0 text-gray-400 hover:text-red-600"
+                              >
+                                <Trash2 className="w-3 h-3" />
+                              </Button>
                             </div>
                           </div>
 
@@ -337,6 +378,27 @@ export default function MacroCard() {
           )}
         </CardContent>
       </Card>
+
+      {/* Delete Confirmation Dialog */}
+      {deleteConfirmId && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 m-4 w-full max-w-sm">
+            <h3 className="text-lg font-semibold mb-4">Delete Meal</h3>
+            <p className="text-gray-600 mb-6">
+              Are you sure you want to delete this meal? This action cannot be
+              undone.
+            </p>
+            <div className="flex gap-3 justify-end">
+              <Button onClick={cancelDelete} variant="outline">
+                Cancel
+              </Button>
+              <Button onClick={confirmDelete} variant="destructive">
+                Delete
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

@@ -58,6 +58,7 @@ export default function RootLayout({
             <OnboardingFlow />
             <LandingPage />
           </SignedOut>
+          <OnboardingFlow />
           {children}
         </body>
       </html>

@@ -16,22 +16,29 @@ const model = openrouter.chat('openai/gpt-4o-mini')
 
 // Define the restaurant search result schema
 const restaurantSearchSchema = z.object({
-  menuItems: z.array(z.object({
-    id: z.string().describe('Unique identifier for the menu item'),
-    name: z.string().describe('Name of the menu item'),
-    description: z.string().describe('Description of the menu item'),
-    price: z.number().optional().describe('Price in USD'),
-    calories: z.number().describe('Calories in the menu item'),
-    protein: z.number().describe('Protein content in grams'),
-    carbs: z.number().describe('Carbohydrates content in grams'),
-    fat: z.number().describe('Fat content in grams'),
-    fiber: z.number().optional().describe('Fiber content in grams'),
-    sugar: z.number().optional().describe('Sugar content in grams'),
-    sodium: z.number().optional().describe('Sodium content in mg'),
-    restaurantId: z.string().describe('Restaurant identifier'),
-    restaurantName: z.string().describe('Name of the restaurant'),
-    estimatedDeliveryTime: z.string().optional().describe('Estimated delivery time (e.g., "15-25 min")'),
-  })).describe('Array of menu items that match the macro targets')
+  menuItems: z
+    .array(
+      z.object({
+        id: z.string().describe('Unique identifier for the menu item'),
+        name: z.string().describe('Name of the menu item'),
+        description: z.string().describe('Description of the menu item'),
+        price: z.number().optional().describe('Price in USD'),
+        calories: z.number().describe('Calories in the menu item'),
+        protein: z.number().describe('Protein content in grams'),
+        carbs: z.number().describe('Carbohydrates content in grams'),
+        fat: z.number().describe('Fat content in grams'),
+        fiber: z.number().optional().describe('Fiber content in grams'),
+        sugar: z.number().optional().describe('Sugar content in grams'),
+        sodium: z.number().optional().describe('Sodium content in mg'),
+        restaurantId: z.string().describe('Restaurant identifier'),
+        restaurantName: z.string().describe('Name of the restaurant'),
+        estimatedDeliveryTime: z
+          .string()
+          .optional()
+          .describe('Estimated delivery time (e.g., "15-25 min")'),
+      })
+    )
+    .describe('Array of menu items that match the macro targets'),
 })
 
 export async function POST(req: Request) {
@@ -40,7 +47,10 @@ export async function POST(req: Request) {
 
     if (!query || !location || !macroTargets) {
       return NextResponse.json(
-        { error: 'Missing required parameters: query, location, or macroTargets' },
+        {
+          error:
+            'Missing required parameters: query, location, or macroTargets',
+        },
         { status: 400 }
       )
     }
@@ -50,7 +60,7 @@ export async function POST(req: Request) {
 
     // Combine search results into a single context
     const searchContext = searchResults.results
-      .map(result => `${result.title}: ${result.content}`)
+      .map((result) => `${result.title}: ${result.content}`)
       .join('\n\n')
 
     // Use LLM to parse and structure the restaurant data
@@ -87,27 +97,27 @@ export async function POST(req: Request) {
         - Restaurant name and ID
         - Estimated delivery time if mentioned
 
-        Focus on healthy, balanced options that would satisfy someone looking for a meal that fits their macro targets.
+        Focus on options that would satisfy someone looking for a meal that fits their macro targets.
         If no exact matches are found, include the closest options that are still reasonable.
+        Let's also make sure to have a good mix of options from different restaurants.
         
         Return up to 10 menu items, prioritizing those that best match the macro targets.
-      `
+      `,
     })
 
     return NextResponse.json({
       menuItems: result.object.menuItems,
       searchQuery: query,
       location,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     })
-
   } catch (error) {
     console.error('Restaurant search error:', error)
-    
+
     return NextResponse.json(
-      { 
+      {
         error: 'Failed to search restaurants',
-        details: error instanceof Error ? error.message : 'Unknown error'
+        details: error instanceof Error ? error.message : 'Unknown error',
       },
       { status: 500 }
     )

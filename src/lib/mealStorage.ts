@@ -96,6 +96,24 @@ export function getMealById(id: string): RecordedMeal | null {
   }
 }
 
+export function deleteMeal(id: string): boolean {
+  try {
+    const existing = JSON.parse(localStorage.getItem(MEALS_STORAGE_KEY) || '[]')
+    const filteredMeals = existing.filter((meal: RecordedMeal) => meal.id !== id)
+    
+    if (filteredMeals.length === existing.length) {
+      // No meal was found with that ID
+      return false
+    }
+    
+    localStorage.setItem(MEALS_STORAGE_KEY, JSON.stringify(filteredMeals))
+    return true
+  } catch (error) {
+    console.error('Error deleting meal:', error)
+    return false
+  }
+}
+
 export function getTodaysNutritionSummary() {
   const meals = getTodaysMeals()
   

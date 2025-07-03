@@ -74,14 +74,19 @@ function RecordMealContent() {
       
       let nutritionData = undefined
       
-      // The image should already be in base64 format from sessionStorage
-      const finalImageUrl = mealImage
+      // Convert image to base64 if it's a blob URL
+      let finalImageUrl = mealImage
       console.log('Image URL type:', mealImage?.startsWith('data:') ? 'base64' : mealImage?.startsWith('blob:') ? 'blob' : 'other')
 
       // Analyze with AI if we have an image
       if (finalImageUrl) {
         setIsAnalyzing(true)
         try {
+          // Convert blob URL to base64 if needed
+          if (finalImageUrl.startsWith('blob:') && selectedImage) {
+            finalImageUrl = await convertToBase64(selectedImage)
+          }
+
           const analysisPrompt = `Analyze this meal image and provide nutritional estimates. Meal details: "${mealDetails}". Please provide a JSON response with estimated calories, protein, carbs, and fat values as numbers only.`
           
           const response = await fetch('/api/upload', {
