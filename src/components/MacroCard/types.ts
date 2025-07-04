@@ -50,5 +50,3 @@ export interface DeleteConfirmDialogProps {
   onConfirm: () => void
   onCancel: () => void
 }
-
-export { RecordedMeal }

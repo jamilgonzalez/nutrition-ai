@@ -1,6 +1,6 @@
 import MealsHeader from '../molecules/MealsHeader'
 import MealItem from './MealItem'
-import { RecordedMeal } from '../types'
+import { RecordedMeal } from '@/lib/mealStorage'
 
 interface RecordedMealsSectionProps {
   meals: RecordedMeal[]

@@ -1,5 +1,5 @@
 import NutritionBadge from '../atoms/NutritionBadge'
-import { RecordedMeal } from '../types'
+import { RecordedMeal } from '@/lib/mealStorage'
 
 interface MealNutritionProps {
   meal: RecordedMeal

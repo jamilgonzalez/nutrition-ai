@@ -4,7 +4,7 @@ import ActionButton from '../atoms/ActionButton'
 interface MealActionsProps {
   onEdit: () => void
   onDelete: () => void
-  timestamp: string
+  timestamp: Date
 }
 
 export default function MealActions({
