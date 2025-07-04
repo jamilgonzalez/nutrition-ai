@@ -56,7 +56,7 @@ async function generateWithOpenAI(text: string) {
 
   const mp3 = await openai.audio.speech.create({
     model: 'tts-1-hd',
-    voice: 'sage',
+    voice: 'nova',
     input: text,
     response_format: 'wav',
     speed: 1.0,

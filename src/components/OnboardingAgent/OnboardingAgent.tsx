@@ -5,16 +5,18 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { useWhisperSpeechRecognition } from '@/hooks/useWhisperSpeechRecognition'
 import { useEnhancedSpeechSynthesis } from '@/hooks/useEnhancedSpeechSynthesis'
 import { VoiceToggleButton } from './atoms/VoiceToggleButton'
-import { OnboardingForm } from './organisms/OnboardingForm'
+import { EnhancedOnboardingForm } from './organisms/EnhancedOnboardingForm'
 import { CalorieRecommendationView } from './organisms/CalorieRecommendationView'
 import { UserProfile, OnboardingAgentProps } from './types'
-import { QUESTIONS } from './constants'
+import {
+  extractMultipleDataPoints,
+  mergeExtractedData,
+} from './utils/nlpProcessor'
 
 export default function OnboardingAgent({
   userProfile,
   onComplete,
 }: OnboardingAgentProps) {
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0)
   const [profile, setProfile] = useState<UserProfile>({
     name: `${userProfile.firstName || ''} ${userProfile.lastName || ''}`.trim(),
     age: null,
@@ -26,12 +28,12 @@ export default function OnboardingAgent({
     healthConditions: [],
     dietaryRestrictions: [],
   })
-  const [textInput, setTextInput] = useState('')
   const [isVoiceMode, setIsVoiceMode] = useState(true)
   const [showCalorieRecommendation, setShowCalorieRecommendation] =
     useState(false)
   const [speechEnabled, setSpeechEnabled] = useState(false)
   const [showGreeting, setShowGreeting] = useState(false)
+  const [skipAutoListening, setSkipAutoListening] = useState(false)
 
   const whisperSpeech = useWhisperSpeechRecognition()
   const {
@@ -57,7 +59,7 @@ export default function OnboardingAgent({
   }, [speechEnabled])
 
   const startListeningAfterSpeech = useCallback(async () => {
-    if (!isVoiceMode || isRecording) return
+    if (!isVoiceMode || isRecording || skipAutoListening) return
 
     setTimeout(async () => {
       try {
@@ -66,17 +68,20 @@ export default function OnboardingAgent({
         console.error('Failed to start auto-listening:', error)
       }
     }, 1000)
-  }, [isVoiceMode, isRecording, whisperSpeech])
+  }, [isVoiceMode, isRecording, skipAutoListening, whisperSpeech])
 
   const speakText = useCallback(
-    async (text: string) => {
+    async (text: string, skipAutoListen: boolean = false) => {
       if (!speechEnabled) {
         enableSpeechSynthesis()
       }
 
+      // Set the skip flag before speaking
+      setSkipAutoListening(skipAutoListen)
+
       try {
         await speak(text)
-        if (currentQuestionIndex > 0) {
+        if (!skipAutoListen) {
           await startListeningAfterSpeech()
         }
       } catch (error) {
@@ -89,125 +94,163 @@ export default function OnboardingAgent({
         }
       }
     },
-    [
-      speak,
-      isSpeaking,
-      stopSpeaking,
-      speechEnabled,
-      enableSpeechSynthesis,
-      startListeningAfterSpeech,
-      currentQuestionIndex,
-    ]
+    [speak, speechEnabled, enableSpeechSynthesis, startListeningAfterSpeech]
   )
 
-  const handleAnswer = useCallback(
-    (answer: string | number) => {
-      const currentQuestion = QUESTIONS[currentQuestionIndex]
-
-      if (currentQuestion.field) {
-        const field = currentQuestion.field as keyof UserProfile
-        if (
-          field === 'goals' ||
-          field === 'healthConditions' ||
-          field === 'dietaryRestrictions'
-        ) {
-          const items =
-            typeof answer === 'string'
-              ? answer
-                  .split(',')
-                  .map((s) => s.trim())
-                  .filter((s) => s)
-              : [answer]
-          setProfile((prev) => ({ ...prev, [field]: items }))
-        } else {
-          setProfile((prev) => ({ ...prev, [field]: answer }))
-        }
-      }
-
-      if (currentQuestionIndex < QUESTIONS.length - 1) {
-        const nextIndex = currentQuestionIndex + 1
-        setCurrentQuestionIndex(nextIndex)
-        setTextInput('')
-
-        if (isVoiceMode) {
-          setTimeout(async () => {
-            const nextQuestion = QUESTIONS[nextIndex]
-            const textToSpeak =
-              typeof nextQuestion.voiceText === 'function'
-                ? nextQuestion.voiceText(profile.name)
-                : nextQuestion.voiceText
-
-            console.log('textToSpeak', textToSpeak)
-            await speakText(textToSpeak)
-          }, 500)
-        }
-      } else {
-        setShowCalorieRecommendation(true)
-        if (isVoiceMode) {
-          setTimeout(() => {
-            speakText(
-              'Great! I have all the information I need. Let me search for personalized calorie recommendations based on your profile.'
-            )
-          }, 500)
-        }
-      }
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-    },
-    [currentQuestionIndex]
-  )
+  const handleCompleteDataCollection = useCallback(() => {
+    setShowCalorieRecommendation(true)
+    if (isVoiceMode) {
+      setTimeout(() => {
+        speakText(
+          'Great! I have all the information I need. Let me search for personalized calorie recommendations based on your profile.'
+        )
+      }, 500)
+    }
+  }, [isVoiceMode, speakText])
 
   const handleVoiceInput = useCallback(
     (input: string) => {
-      const currentQuestion = QUESTIONS[currentQuestionIndex]
-      const normalizedInput = input.toLowerCase().trim()
+      if (input.trim()) {
+        const normalizedInput = input.toLowerCase().trim()
 
-      if (currentQuestion.type === 'number') {
-        const number = parseFloat(normalizedInput.replace(/[^\d.]/g, ''))
-        if (!isNaN(number)) {
-          handleAnswer(number)
-        }
-      } else if (currentQuestion.type === 'select' && currentQuestion.options) {
-        const matchedOption = currentQuestion.options.find(
-          (option) =>
-            normalizedInput.includes(option.label.toLowerCase()) ||
-            normalizedInput.includes(option.value.toLowerCase())
+        // Check if user is confirming information is correct
+        const confirmationPhrases = [
+          'yes',
+          'yep',
+          'yup',
+          'yeah',
+          'correct',
+          'right',
+          'good',
+          'looks good',
+          'thats right',
+          "that's right",
+          'thats correct',
+          "that's correct",
+          'sounds good',
+          'sounds right',
+          'all good',
+          'perfect',
+          'exactly',
+          'confirmed',
+          'confirm',
+          'ok',
+          'okay',
+          'fine',
+          'absolutely',
+          'sure',
+          'definitely',
+          'for sure',
+          'all set',
+          'looks correct',
+        ]
+
+        const isConfirming = confirmationPhrases.some(
+          (phrase) =>
+            normalizedInput.includes(phrase) ||
+            normalizedInput === phrase ||
+            normalizedInput.startsWith(phrase + ' ') ||
+            normalizedInput.endsWith(' ' + phrase)
         )
-        if (matchedOption) {
-          handleAnswer(matchedOption.value)
+
+        // Check if user wants to make changes
+        const changePhrases = [
+          'no',
+          'nope',
+          'wrong',
+          'incorrect',
+          'change',
+          'update',
+          'fix',
+          'modify',
+          'edit',
+          'not right',
+          'not correct',
+          "that's wrong",
+          'thats wrong',
+          'need to change',
+          'needs fixing',
+        ]
+
+        const wantsChanges = changePhrases.some((phrase) =>
+          normalizedInput.includes(phrase)
+        )
+
+        // Check if all data is complete for confirmation logic
+        const isDataComplete =
+          profile.age !== null &&
+          profile.sex !== null &&
+          profile.height !== null &&
+          profile.weight !== null &&
+          profile.activityLevel !== null &&
+          profile.goals &&
+          profile.goals.length > 0 &&
+          profile.dietaryRestrictions.length > 0
+
+        if (isDataComplete && isConfirming) {
+          // User confirmed - proceed to next step
+          if (isVoiceMode) {
+            speakText(
+              'Great! Let me create your personalized nutrition plan.',
+              true
+            )
+          }
+          handleCompleteDataCollection()
+          clearTranscript()
+          return
         }
-      } else if (currentQuestion.type === 'text') {
-        if (normalizedInput.length > 0) {
-          handleAnswer(normalizedInput)
+
+        if (isDataComplete && wantsChanges) {
+          // User wants to make changes
+          if (isVoiceMode) {
+            speakText('What would you like me to update?')
+          }
+          clearTranscript()
+          return
+        }
+
+        // Normal data extraction logic
+        const extractedData = extractMultipleDataPoints(input)
+        const updatedProfile = mergeExtractedData(profile, extractedData)
+        setProfile(updatedProfile)
+
+        // Provide feedback about what was extracted
+        if (Object.keys(extractedData).length > 0) {
+          const extractedItems = Object.keys(extractedData).join(', ')
+          console.log(`Extracted: ${extractedItems}`)
+
+          if (isVoiceMode) {
+            const feedbackMessage = `Got it! Could you confirm that the information I've collected is correct?`
+            speakText(feedbackMessage)
+          }
         }
       }
-
       clearTranscript()
     },
-    [currentQuestionIndex, clearTranscript, handleAnswer]
+    [
+      profile,
+      clearTranscript,
+      isVoiceMode,
+      speakText,
+      handleCompleteDataCollection,
+    ]
   )
 
   useEffect(() => {
-    if (transcript && isVoiceMode) {
+    if (transcript && isVoiceMode && !showCalorieRecommendation) {
       handleVoiceInput(transcript)
     }
-  }, [transcript, isVoiceMode, handleVoiceInput])
+  }, [transcript, isVoiceMode, showCalorieRecommendation, handleVoiceInput])
 
   const toggleRecording = useCallback(async () => {
     if (isRecording) {
       await whisperSpeech.stopRecording()
     } else {
+      // Reset skip flag when user manually starts recording
+      setSkipAutoListening(false)
       await whisperSpeech.startRecording()
     }
   }, [isRecording, whisperSpeech])
-
-  const handleTextSubmit = () => {
-    if (textInput.trim()) {
-      if (isRecording) {
-        whisperSpeech.stopRecording()
-      }
-      handleAnswer(textInput.trim())
-    }
-  }
 
   const handleCalorieRecommendationComplete = () => {
     if (isVoiceMode) {
@@ -225,34 +268,19 @@ export default function OnboardingAgent({
 
     setTimeout(async () => {
       if (isVoiceMode) {
-        const currentQuestion = QUESTIONS[0]
-        const greetingText =
-          typeof currentQuestion.voiceText === 'function'
-            ? currentQuestion.voiceText(profile.name)
-            : currentQuestion.voiceText
+        const firstName = profile.name.split(' ')[0]
+        const greetingText = `Hello ${firstName}! I'm your nutrition assistant, and I'm here to learn about your health and fitness goals so I can create a personalized nutrition plan just for you. I'll show what kind of info i'm looking for in this next step and you can just say something like "I'm 25 years old, male, 6 feet tall, 180 pounds, and I'm allergic to nuts."`
         await speakText(greetingText)
       }
 
       setTimeout(
-        async () => {
-          setCurrentQuestionIndex(1)
+        () => {
           setShowGreeting(false)
-
-          if (isVoiceMode) {
-            const question = QUESTIONS[1]
-            const textToSpeak =
-              typeof question.text === 'function'
-                ? question.text(profile.name)
-                : question.text
-            await speakText(textToSpeak)
-          }
         },
         isVoiceMode ? 1000 : 2000
       )
     }, 100)
   }
-
-  const currentQuestion = QUESTIONS[currentQuestionIndex]
 
   if (showCalorieRecommendation) {
     return (
@@ -263,6 +291,8 @@ export default function OnboardingAgent({
         analyser={analyser}
         onToggleVoiceMode={() => setIsVoiceMode(!isVoiceMode)}
         onComplete={handleCalorieRecommendationComplete}
+        onSpeakText={speakText}
+        transcript={transcript}
       />
     )
   }
@@ -279,12 +309,8 @@ export default function OnboardingAgent({
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <OnboardingForm
-          currentQuestion={currentQuestion}
-          currentQuestionIndex={currentQuestionIndex}
-          totalQuestions={QUESTIONS.length}
+        <EnhancedOnboardingForm
           profile={profile}
-          textInput={textInput}
           isVoiceMode={isVoiceMode}
           showGreeting={showGreeting}
           isRecording={isRecording}
@@ -294,12 +320,19 @@ export default function OnboardingAgent({
           speechError={speechError}
           analyser={analyser}
           whisperAnalyser={whisperSpeech.analyser}
-          onTextInputChange={setTextInput}
-          onSelectChange={handleAnswer}
-          onTextSubmit={handleTextSubmit}
+          onProfileUpdate={setProfile}
           onToggleRecording={toggleRecording}
-          onUseTextInstead={() => setIsVoiceMode(false)}
+          onToggleVoiceMode={() => setIsVoiceMode(!isVoiceMode)}
           onGetStarted={handleGetStarted}
+          onComplete={handleCompleteDataCollection}
+          onSpeakText={speakText}
+          onUserInput={() => {
+            // User has provided first input, follow-up logic can now activate
+            console.log('User provided first input')
+          }}
+          onTranscriptProcessed={(transcript) => {
+            console.log('Transcript processed:', transcript)
+          }}
         />
       </CardContent>
     </Card>
