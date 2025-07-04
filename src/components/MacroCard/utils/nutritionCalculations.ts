@@ -1,33 +1,49 @@
 import { DEFAULT_DAILY_GOALS } from '../constants'
 import { DailyNutritionData } from '../types'
 
-export function createDailyNutritionData(nutritionSummary: {
-  calories: number
-  protein: number
-  carbs: number
-  fat: number
-}): DailyNutritionData {
+export function createDailyNutritionData(
+  nutritionSummary: {
+    calories: number
+    protein: number
+    carbs: number
+    fat: number
+  },
+  customTargets?: {
+    dailyCalories: number
+    targetProtein: number
+    targetCarbs: number
+    targetFat: number
+  }
+): DailyNutritionData {
+  // Use custom targets if provided, otherwise fall back to defaults
+  const targets = customTargets || {
+    dailyCalories: DEFAULT_DAILY_GOALS.calories,
+    targetProtein: DEFAULT_DAILY_GOALS.protein,
+    targetCarbs: DEFAULT_DAILY_GOALS.carbs,
+    targetFat: DEFAULT_DAILY_GOALS.fat,
+  }
+
   const actualCaloriesConsumed = nutritionSummary.calories
   const actualCaloriesRemaining = Math.max(
-    DEFAULT_DAILY_GOALS.calories - actualCaloriesConsumed,
+    targets.dailyCalories - actualCaloriesConsumed,
     0
   )
 
   return {
     totalCalories: actualCaloriesConsumed,
     caloriesRemaining: actualCaloriesRemaining,
-    dailyGoal: DEFAULT_DAILY_GOALS.calories,
+    dailyGoal: targets.dailyCalories,
     protein: {
       current: nutritionSummary.protein,
-      goal: DEFAULT_DAILY_GOALS.protein,
+      goal: targets.targetProtein,
     },
     carbs: {
       current: nutritionSummary.carbs,
-      goal: DEFAULT_DAILY_GOALS.carbs,
+      goal: targets.targetCarbs,
     },
     fat: {
       current: nutritionSummary.fat,
-      goal: DEFAULT_DAILY_GOALS.fat,
+      goal: targets.targetFat,
     },
     sugar: {
       current: 0, // Sugar data not tracked in meals yet

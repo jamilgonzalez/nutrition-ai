@@ -17,6 +17,15 @@ interface UserProfile {
   targetFat?: number
 }
 
+interface NutritionTargets {
+  userId: string
+  dailyCalories: number
+  targetProtein: number
+  targetCarbs: number
+  targetFat: number
+  updatedAt: string
+}
+
 interface NutritionEntry {
   id: string
   userId: string
@@ -192,6 +201,48 @@ export class DatabaseStub {
       averageCarbs: 0,
       averageFat: 0,
       daysTracked: 0
+    }
+  }
+
+  // Nutrition Targets operations
+  static async saveNutritionTargets(userId: string, targets: Omit<NutritionTargets, 'userId' | 'updatedAt'>): Promise<void> {
+    try {
+      const nutritionTargets: NutritionTargets = {
+        ...targets,
+        userId,
+        updatedAt: new Date().toISOString()
+      }
+      
+      localStorage.setItem(`nutrition_targets_${userId}`, JSON.stringify(nutritionTargets))
+      console.log('Nutrition targets saved to localStorage:', nutritionTargets)
+      
+      // TODO: Replace with actual database call
+      // await supabase.from('nutrition_targets').upsert(nutritionTargets)
+    } catch (error) {
+      console.error('Error saving nutrition targets:', error)
+      throw new Error('Failed to save nutrition targets')
+    }
+  }
+
+  static async getNutritionTargets(userId: string): Promise<NutritionTargets | null> {
+    try {
+      const data = localStorage.getItem(`nutrition_targets_${userId}`)
+      if (!data) return null
+      
+      const targets = JSON.parse(data)
+      console.log('Nutrition targets loaded from localStorage:', targets)
+      return targets
+      
+      // TODO: Replace with actual database call
+      // const { data, error } = await supabase
+      //   .from('nutrition_targets')
+      //   .select('*')
+      //   .eq('userId', userId)
+      //   .single()
+      // return data
+    } catch (error) {
+      console.error('Error getting nutrition targets:', error)
+      return null
     }
   }
 }

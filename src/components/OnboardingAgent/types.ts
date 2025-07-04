@@ -19,6 +19,7 @@ export interface UserProfile {
 export interface OnboardingAgentProps {
   userProfile: { firstName?: string; lastName?: string }
   onComplete: (profile: UserProfile) => void
+  userId?: string
 }
 
 export interface QuestionOption {

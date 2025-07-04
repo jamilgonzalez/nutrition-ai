@@ -16,6 +16,7 @@ import {
 export default function OnboardingAgent({
   userProfile,
   onComplete,
+  userId,
 }: OnboardingAgentProps) {
   const [profile, setProfile] = useState<UserProfile>({
     name: `${userProfile.firstName || ''} ${userProfile.lastName || ''}`.trim(),
@@ -293,6 +294,7 @@ export default function OnboardingAgent({
         onComplete={handleCalorieRecommendationComplete}
         onSpeakText={speakText}
         transcript={transcript}
+        userId={userId}
       />
     )
   }

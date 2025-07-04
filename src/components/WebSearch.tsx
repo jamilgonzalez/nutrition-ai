@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Textarea } from '@/components/ui/textarea'
 import { ExternalLink, Search, Loader2, Edit3, Mic, MicOff } from 'lucide-react'
+import DatabaseStub from '@/lib/database'
 
 interface SearchResult {
   title: string
@@ -45,6 +46,7 @@ interface WebSearchProps {
   isVoiceMode?: boolean
   onToggleVoiceMode?: () => void
   onSpeakText?: (text: string) => void
+  userId?: string
 }
 
 export function WebSearch({ 
@@ -52,7 +54,8 @@ export function WebSearch({
   onComplete, 
   isVoiceMode = false, 
   onToggleVoiceMode,
-  onSpeakText 
+  onSpeakText,
+  userId 
 }: WebSearchProps) {
   const [isSearching, setIsSearching] = useState(false)
   const [results, setResults] = useState<CalorieRecommendation | null>(null)
@@ -304,7 +307,23 @@ export function WebSearch({
                 Adjust Plan
               </Button>
             )}
-            <Button onClick={onComplete} className="flex-1">
+            <Button onClick={async () => {
+              // Save nutrition targets to database if userId is provided
+              if (userId && results) {
+                try {
+                  await DatabaseStub.saveNutritionTargets(userId, {
+                    dailyCalories: results.dailyCalories,
+                    targetProtein: results.macros?.protein || results.protein || 0,
+                    targetCarbs: results.macros?.carbs || results.carbs || 0,
+                    targetFat: results.macros?.fat || results.fat || 0,
+                  })
+                  console.log('Nutrition targets saved successfully')
+                } catch (error) {
+                  console.error('Failed to save nutrition targets:', error)
+                }
+              }
+              onComplete()
+            }} className="flex-1">
               Complete Setup
             </Button>
           </div>

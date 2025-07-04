@@ -84,6 +84,7 @@ export default function OnboardingFlow() {
             lastName: user.lastName || undefined,
           }}
           onComplete={handleOnboardingComplete}
+          userId={user.id}
         />
       </div>
     )

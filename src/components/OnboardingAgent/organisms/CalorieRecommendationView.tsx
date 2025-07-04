@@ -15,6 +15,7 @@ interface CalorieRecommendationViewProps {
   onComplete: () => void
   onSpeakText?: (text: string) => void
   transcript?: string
+  userId?: string
 }
 
 export function CalorieRecommendationView({
@@ -26,6 +27,7 @@ export function CalorieRecommendationView({
   onComplete,
   onSpeakText,
   transcript,
+  userId,
 }: CalorieRecommendationViewProps) {
   const searchQuery = `daily calorie needs ${profile.age} year old ${
     profile.sex
@@ -98,6 +100,7 @@ export function CalorieRecommendationView({
             isVoiceMode={isVoiceMode}
             onToggleVoiceMode={onToggleVoiceMode}
             onSpeakText={onSpeakText}
+            userId={userId}
           />
         </div>
       </CardContent>
