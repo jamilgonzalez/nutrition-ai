@@ -270,7 +270,7 @@ export default function OnboardingAgent({
     setTimeout(async () => {
       if (isVoiceMode) {
         const firstName = profile.name.split(' ')[0]
-        const greetingText = `Hello ${firstName}! I'm your nutrition assistant, and I'm here to learn about your health and fitness goals so I can create a personalized nutrition plan just for you. I'll show what kind of info i'm looking for in this next step and you can just say something like "I'm 25 years old, male, 6 feet tall, 180 pounds, and I'm allergic to nuts."`
+        const greetingText = `Hello ${firstName}! I'm your nutrition assistant, and I'm here to learn about your health and fitness goals so I can create a personalized nutrition plan just for you."`
         await speakText(greetingText)
       }
 

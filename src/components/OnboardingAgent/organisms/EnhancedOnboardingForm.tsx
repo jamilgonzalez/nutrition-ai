@@ -163,14 +163,15 @@ export function EnhancedOnboardingForm({
   // Track when user provides input by watching for profile changes
   useEffect(() => {
     if (hasStartedVoiceOnboarding && !hasProvidedInput) {
-      const hasAnyData = profile.age !== null || 
-                        profile.sex !== null || 
-                        profile.height !== null || 
-                        profile.weight !== null || 
-                        profile.activityLevel !== null || 
-                        (profile.goals && profile.goals.length > 0) || 
-                        profile.dietaryRestrictions.length > 0
-      
+      const hasAnyData =
+        profile.age !== null ||
+        profile.sex !== null ||
+        profile.height !== null ||
+        profile.weight !== null ||
+        profile.activityLevel !== null ||
+        (profile.goals && profile.goals.length > 0) ||
+        profile.dietaryRestrictions.length > 0
+
       if (hasAnyData) {
         setHasProvidedInput(true)
         if (onUserInput) {
@@ -185,7 +186,7 @@ export function EnhancedOnboardingForm({
     const timer = setTimeout(() => {
       setIsInitialMount(false)
     }, 2000) // Wait 2 seconds before allowing follow-up questions
-    
+
     return () => clearTimeout(timer)
   }, [])
 
@@ -699,10 +700,7 @@ export function EnhancedOnboardingForm({
     return <ManualFormStep />
   }
 
-  console.log('PROFILE', profile)
-
-  if (
-    !hasStartedVoiceOnboarding &&
+  const emptyProfile =
     profile.age === null &&
     profile.sex === null &&
     profile.height === null &&
@@ -710,7 +708,8 @@ export function EnhancedOnboardingForm({
     profile.activityLevel === null &&
     profile.goals.length === 0 &&
     profile.dietaryRestrictions.length === 0
-  ) {
+
+  if (!hasStartedVoiceOnboarding && emptyProfile) {
     return <WelcomeStep />
   }
 

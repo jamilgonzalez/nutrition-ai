@@ -54,12 +54,15 @@ export default function RootLayout({
               </SignedIn>
             </div>
           </header>
+
           <SignedOut>
-            <OnboardingFlow />
             <LandingPage />
           </SignedOut>
-          <OnboardingFlow />
-          {children}
+
+          <SignedIn>
+            <OnboardingFlow />
+            {children}
+          </SignedIn>
         </body>
       </html>
     </ClerkProvider>

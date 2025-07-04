@@ -38,7 +38,7 @@ export default function OnboardingFlow() {
       const profile = await DatabaseStub.getUserProfile(user.id)
       setHasCompletedOnboarding(!!profile)
     } catch (error) {
-      console.log('Error checking onboarding status:', error)
+      // TODO: handle UI in case of error
       console.error('Error checking onboarding status:', error)
       setHasCompletedOnboarding(false)
     } finally {
@@ -57,9 +57,7 @@ export default function OnboardingFlow() {
     try {
       if (!user?.id) return
 
-      // Save user profile using database stub
       await DatabaseStub.saveUserProfile(user.id, profile)
-
       console.log('Onboarding completed for user:', user.id)
       setHasCompletedOnboarding(true)
     } catch (error) {
@@ -67,6 +65,7 @@ export default function OnboardingFlow() {
     }
   }
 
+  // show loading spinner if Clerk is loading user or if we're checking onboarding status
   if (!isLoaded || isCheckingOnboarding) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -75,6 +74,7 @@ export default function OnboardingFlow() {
     )
   }
 
+  // show onboarding agent if user is loaded and onboarding is not complete
   if (user && !hasCompletedOnboarding) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
