@@ -16,6 +16,7 @@ import MacroCard from '@/components/MacroCard'
 import MealChatInput from '@/components/MealChatInput'
 import { useSpeechRecognition } from '@/hooks/useSpeechRecognition'
 import { useImageUpload } from '@/hooks/useImageUpload'
+import { saveMeal, type RecordedMeal } from '@/lib/mealStorage'
 
 export default function Home() {
   const router = useRouter()
@@ -138,6 +139,7 @@ export default function Home() {
         message ||
         'Analyze this meal image and provide detailed nutritional information.'
 
+      // First, send the message to the chat for display
       if (image) {
         const base64Image = await convertToBase64(image)
 
@@ -158,8 +160,76 @@ export default function Home() {
           content,
         })
       }
+
+      // Then, generate structured nutritional analysis and save to database
+      await generateAndSaveNutritionData(message, image)
     } catch (error) {
       console.error('Error processing meal chat:', error)
+    }
+  }
+
+  const generateAndSaveNutritionData = async (message: string, image?: File) => {
+    try {
+      let content =
+        message ||
+        'Analyze this meal image and provide detailed nutritional information.'
+
+      const requestBody: any = {
+        structured: true,
+        messages: [
+          {
+            role: 'user',
+            content,
+          },
+        ],
+      }
+
+      if (image) {
+        const base64Image = await convertToBase64(image)
+        requestBody.messages[0].experimental_attachments = [
+          {
+            name: image.name,
+            contentType: image.type,
+            url: base64Image,
+          },
+        ]
+      }
+
+      const response = await fetch('/api/upload', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestBody),
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to get structured nutrition analysis')
+      }
+
+      const nutritionData = await response.json()
+
+      // Save meal to database
+      const savedMeal = saveMeal({
+        name: nutritionData.mealName || 'Meal from Chat',
+        notes: message || 'Added via chat',
+        image: image ? URL.createObjectURL(image) : undefined,
+        nutritionData: {
+          calories: nutritionData.totalCalories || 0,
+          protein: nutritionData.macros?.protein || 0,
+          carbs: nutritionData.macros?.carbohydrates || 0,
+          fat: nutritionData.macros?.fat || 0,
+        },
+      })
+
+      console.log('Meal saved:', savedMeal)
+      
+      // Optionally show a success message or update UI
+      // You could dispatch an event here to refresh the MacroCard
+      window.dispatchEvent(new CustomEvent('mealSaved', { detail: savedMeal }))
+
+    } catch (error) {
+      console.error('Error generating and saving nutrition data:', error)
     }
   }
 

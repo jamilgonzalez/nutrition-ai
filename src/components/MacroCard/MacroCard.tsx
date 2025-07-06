@@ -34,11 +34,15 @@ export default function MacroCard() {
     targetFat: number
   } | null>(null)
 
-  useEffect(() => {
+  const refreshMealData = () => {
     const meals = getTodaysMeals()
     const summary = getTodaysNutritionSummary(meals)
     setRecordedMeals(meals)
     setNutritionSummary(summary)
+  }
+
+  useEffect(() => {
+    refreshMealData()
 
     // Load user's nutrition targets
     const loadNutritionTargets = async () => {
@@ -56,6 +60,17 @@ export default function MacroCard() {
     }
 
     loadNutritionTargets()
+
+    // Listen for meal saved events from chat
+    const handleMealSaved = () => {
+      refreshMealData()
+    }
+
+    window.addEventListener('mealSaved', handleMealSaved)
+    
+    return () => {
+      window.removeEventListener('mealSaved', handleMealSaved)
+    }
   }, [user])
 
   const handleEditMeal = (mealId: string) => {
@@ -71,10 +86,7 @@ export default function MacroCard() {
       const success = deleteMeal(deleteConfirmId)
       if (success) {
         // Refresh the meals and nutrition summary
-        const meals = getTodaysMeals()
-        const summary = getTodaysNutritionSummary(meals)
-        setRecordedMeals(meals)
-        setNutritionSummary(summary)
+        refreshMealData()
       } else {
         alert('Failed to delete meal. Please try again.')
       }
