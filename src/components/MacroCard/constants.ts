@@ -6,3 +6,10 @@ export const DEFAULT_DAILY_GOALS = {
   fat: 70, // grams
   sugar: 50, // grams
 }
+
+export const NUTRITION_SUMMARY_DEFAULT = {
+  calories: 0,
+  protein: 0,
+  carbs: 0,
+  fat: 0,
+}

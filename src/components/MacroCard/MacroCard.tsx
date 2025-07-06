@@ -17,17 +17,15 @@ import RecordedMealsSection from './organisms/RecordedMealsSection'
 import DeleteConfirmDialog from './organisms/DeleteConfirmDialog'
 import { createDailyNutritionData } from './utils/nutritionCalculations'
 import DatabaseStub from '@/lib/database'
+import { NUTRITION_SUMMARY_DEFAULT } from './constants'
 
 export default function MacroCard() {
   const router = useRouter()
   const { user } = useUser()
   const [recordedMeals, setRecordedMeals] = useState<RecordedMeal[]>([])
-  const [nutritionSummary, setNutritionSummary] = useState({
-    calories: 0,
-    protein: 0,
-    carbs: 0,
-    fat: 0,
-  })
+  const [nutritionSummary, setNutritionSummary] = useState(
+    NUTRITION_SUMMARY_DEFAULT
+  )
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null)
   const [nutritionTargets, setNutritionTargets] = useState<{
     dailyCalories: number
@@ -38,12 +36,10 @@ export default function MacroCard() {
 
   useEffect(() => {
     const meals = getTodaysMeals()
-    const summary = getTodaysNutritionSummary()
-    console.log('Loaded meals:', meals)
-    console.log('Nutrition summary:', summary)
+    const summary = getTodaysNutritionSummary(meals)
     setRecordedMeals(meals)
     setNutritionSummary(summary)
-    
+
     // Load user's nutrition targets
     const loadNutritionTargets = async () => {
       if (user?.id) {
@@ -58,7 +54,7 @@ export default function MacroCard() {
         }
       }
     }
-    
+
     loadNutritionTargets()
   }, [user])
 
@@ -76,7 +72,7 @@ export default function MacroCard() {
       if (success) {
         // Refresh the meals and nutrition summary
         const meals = getTodaysMeals()
-        const summary = getTodaysNutritionSummary()
+        const summary = getTodaysNutritionSummary(meals)
         setRecordedMeals(meals)
         setNutritionSummary(summary)
       } else {
@@ -90,10 +86,11 @@ export default function MacroCard() {
     setDeleteConfirmId(null)
   }
 
-  console.log(nutritionSummary)
-
   // Create daily nutrition data using real meal data and user's custom targets
-  const dailyData = createDailyNutritionData(nutritionSummary, nutritionTargets || undefined)
+  const dailyData = createDailyNutritionData(
+    nutritionSummary,
+    nutritionTargets || undefined
+  )
 
   return (
     <div className="w-full max-w-4xl mx-auto mb-8">
@@ -113,7 +110,7 @@ export default function MacroCard() {
           <MacronutrientGrid data={dailyData} />
 
           {/* Location-Based Meal Suggestions */}
-          <LocationBasedSuggestions dailyNutritionData={dailyData} />
+          {/* <LocationBasedSuggestions dailyNutritionData={dailyData} /> */}
 
           {/* Recorded Meals */}
           <RecordedMealsSection

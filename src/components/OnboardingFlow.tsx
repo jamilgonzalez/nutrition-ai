@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useUser } from '@clerk/nextjs'
 import { OnboardingAgent } from './OnboardingAgent'
 import DatabaseStub from '@/lib/database'
+import LoadingSpinner from './loadingSpinner'
 
 interface UserProfile {
   name: string
@@ -33,7 +34,6 @@ export default function OnboardingFlow() {
 
     try {
       if (!user?.id) return
-
       // Check if user has completed onboarding using database stub
       const profile = await DatabaseStub.getUserProfile(user.id)
       setHasCompletedOnboarding(!!profile)
@@ -42,7 +42,6 @@ export default function OnboardingFlow() {
       console.error('Error checking onboarding status:', error)
       setHasCompletedOnboarding(false)
     } finally {
-      console.log('Onboarding status checked for user:', user?.id)
       setIsCheckingOnboarding(false)
     }
   }
@@ -56,9 +55,7 @@ export default function OnboardingFlow() {
   const handleOnboardingComplete = async (profile: UserProfile) => {
     try {
       if (!user?.id) return
-
       await DatabaseStub.saveUserProfile(user.id, profile)
-      console.log('Onboarding completed for user:', user.id)
       setHasCompletedOnboarding(true)
     } catch (error) {
       console.error('Error saving onboarding data:', error)
@@ -67,11 +64,7 @@ export default function OnboardingFlow() {
 
   // show loading spinner if Clerk is loading user or if we're checking onboarding status
   if (!isLoaded || isCheckingOnboarding) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
-      </div>
-    )
+    return <LoadingSpinner />
   }
 
   // show onboarding agent if user is loaded and onboarding is not complete

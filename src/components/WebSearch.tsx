@@ -49,13 +49,13 @@ interface WebSearchProps {
   userId?: string
 }
 
-export function WebSearch({ 
-  query, 
-  onComplete, 
-  isVoiceMode = false, 
+export function WebSearch({
+  query,
+  onComplete,
+  isVoiceMode = false,
   onToggleVoiceMode,
   onSpeakText,
-  userId 
+  userId,
 }: WebSearchProps) {
   const [isSearching, setIsSearching] = useState(false)
   const [results, setResults] = useState<CalorieRecommendation | null>(null)
@@ -90,80 +90,89 @@ export function WebSearch({
     } catch (err) {
       console.error('Search error:', err)
       setError('Failed to fetch calorie recommendations. Please try again.')
-
-      // Fallback with mock data for demo purposes
-      setResults({
-        dailyCalories: 2200,
-        macros: {
-          protein: 165,
-          carbs: 275,
-          fat: 73,
-          proteinPercentage: 30,
-          carbsPercentage: 50,
-          fatPercentage: 20,
-        },
-        sources: [
-          {
-            title: 'Calorie Calculator - Mayo Clinic',
-            url: 'https://www.mayoclinic.org/healthy-lifestyle/weight-loss/in-depth/calories/art-20048890',
-            snippet:
-              'Calculate your daily calorie needs based on age, sex, height, weight, and activity level.',
-            score: 0.95,
-          },
-          {
-            title: 'Dietary Guidelines for Americans - USDA',
-            url: 'https://www.dietaryguidelines.gov/',
-            snippet:
-              'Official dietary guidelines including calorie recommendations for different demographics.',
-            score: 0.92,
-          },
-        ],
-        summary:
-          'Based on your profile, your estimated daily calorie needs are around 2,200 calories. This includes approximately 165g protein (30%), 275g carbs (50%), and 73g fat (20%). These recommendations are based on established nutritional guidelines for your age, sex, activity level, and goals.',
-      })
+      // note: DO NOT provide mock data here as a fallback.
     } finally {
       setIsSearching(false)
     }
   }
 
+  // TODO: rather than having this complex logic, we should leverage the LLM with the structured output to adjust the plan.
   const handleAdjustment = async () => {
     if (!adjustmentText.trim() || !results) return
-    
+
     setIsAdjusting(true)
     try {
       // In a real implementation, this would call an API to adjust the plan
       // For now, we'll simulate an adjustment
       const adjustedResults = { ...results }
-      
+
       // Simple adjustment logic based on common requests
       const lowerText = adjustmentText.toLowerCase()
-      
-      if (lowerText.includes('more protein') || lowerText.includes('increase protein')) {
-        adjustedResults.macros.protein = Math.round(adjustedResults.macros.protein * 1.2)
-        adjustedResults.macros.carbs = Math.round(adjustedResults.macros.carbs * 0.9)
-      } else if (lowerText.includes('less carbs') || lowerText.includes('lower carbs')) {
-        adjustedResults.macros.carbs = Math.round(adjustedResults.macros.carbs * 0.8)
-        adjustedResults.macros.fat = Math.round(adjustedResults.macros.fat * 1.1)
-      } else if (lowerText.includes('more calories') || lowerText.includes('increase calories')) {
-        adjustedResults.dailyCalories = Math.round(adjustedResults.dailyCalories * 1.1)
-        adjustedResults.macros.protein = Math.round(adjustedResults.macros.protein * 1.1)
-        adjustedResults.macros.carbs = Math.round(adjustedResults.macros.carbs * 1.1)
-        adjustedResults.macros.fat = Math.round(adjustedResults.macros.fat * 1.1)
-      } else if (lowerText.includes('less calories') || lowerText.includes('fewer calories')) {
-        adjustedResults.dailyCalories = Math.round(adjustedResults.dailyCalories * 0.9)
-        adjustedResults.macros.protein = Math.round(adjustedResults.macros.protein * 0.9)
-        adjustedResults.macros.carbs = Math.round(adjustedResults.macros.carbs * 0.9)
-        adjustedResults.macros.fat = Math.round(adjustedResults.macros.fat * 0.9)
+
+      if (
+        lowerText.includes('more protein') ||
+        lowerText.includes('increase protein')
+      ) {
+        adjustedResults.macros.protein = Math.round(
+          adjustedResults.macros.protein * 1.2
+        )
+        adjustedResults.macros.carbs = Math.round(
+          adjustedResults.macros.carbs * 0.9
+        )
+      } else if (
+        lowerText.includes('less carbs') ||
+        lowerText.includes('lower carbs')
+      ) {
+        adjustedResults.macros.carbs = Math.round(
+          adjustedResults.macros.carbs * 0.8
+        )
+        adjustedResults.macros.fat = Math.round(
+          adjustedResults.macros.fat * 1.1
+        )
+      } else if (
+        lowerText.includes('more calories') ||
+        lowerText.includes('increase calories')
+      ) {
+        adjustedResults.dailyCalories = Math.round(
+          adjustedResults.dailyCalories * 1.1
+        )
+        adjustedResults.macros.protein = Math.round(
+          adjustedResults.macros.protein * 1.1
+        )
+        adjustedResults.macros.carbs = Math.round(
+          adjustedResults.macros.carbs * 1.1
+        )
+        adjustedResults.macros.fat = Math.round(
+          adjustedResults.macros.fat * 1.1
+        )
+      } else if (
+        lowerText.includes('less calories') ||
+        lowerText.includes('fewer calories')
+      ) {
+        adjustedResults.dailyCalories = Math.round(
+          adjustedResults.dailyCalories * 0.9
+        )
+        adjustedResults.macros.protein = Math.round(
+          adjustedResults.macros.protein * 0.9
+        )
+        adjustedResults.macros.carbs = Math.round(
+          adjustedResults.macros.carbs * 0.9
+        )
+        adjustedResults.macros.fat = Math.round(
+          adjustedResults.macros.fat * 0.9
+        )
       }
-      
+
       adjustedResults.summary = `${adjustedResults.summary} (Adjusted based on your preferences: "${adjustmentText}")`
-      
+
       setResults(adjustedResults)
       setShowAdjustments(false)
       setAdjustmentText('')
-      
+
       if (onSpeakText) {
-        onSpeakText('I\'ve adjusted your plan based on your preferences. Here are your updated recommendations.')
+        onSpeakText(
+          "I've adjusted your plan based on your preferences. Here are your updated recommendations."
+        )
       }
     } catch (error) {
       console.error('Error adjusting plan:', error)
@@ -175,7 +184,9 @@ export function WebSearch({
   const handleShowAdjustments = () => {
     setShowAdjustments(true)
     if (onSpeakText) {
-      onSpeakText('You can now adjust your nutrition plan. Tell me what changes you\'d like to make, such as more protein, fewer carbs, or different calorie targets.')
+      onSpeakText(
+        "You can now adjust your nutrition plan. Tell me what changes you'd like to make, such as more protein, fewer carbs, or different calorie targets."
+      )
     }
   }
 
@@ -262,7 +273,8 @@ export function WebSearch({
               </h4>
               <div className="space-y-3">
                 <p className="text-sm text-gray-600">
-                  Tell me what changes you'd like to make to your nutrition plan:
+                  Tell me what changes you'd like to make to your nutrition
+                  plan:
                 </p>
                 <Textarea
                   value={adjustmentText}
@@ -307,23 +319,27 @@ export function WebSearch({
                 Adjust Plan
               </Button>
             )}
-            <Button onClick={async () => {
-              // Save nutrition targets to database if userId is provided
-              if (userId && results) {
-                try {
-                  await DatabaseStub.saveNutritionTargets(userId, {
-                    dailyCalories: results.dailyCalories,
-                    targetProtein: results.macros?.protein || results.protein || 0,
-                    targetCarbs: results.macros?.carbs || results.carbs || 0,
-                    targetFat: results.macros?.fat || results.fat || 0,
-                  })
-                  console.log('Nutrition targets saved successfully')
-                } catch (error) {
-                  console.error('Failed to save nutrition targets:', error)
+            <Button
+              onClick={async () => {
+                // Save nutrition targets to database if userId is provided
+                if (userId && results) {
+                  try {
+                    await DatabaseStub.saveNutritionTargets(userId, {
+                      dailyCalories: results.dailyCalories,
+                      targetProtein:
+                        results.macros?.protein || results.protein || 0,
+                      targetCarbs: results.macros?.carbs || results.carbs || 0,
+                      targetFat: results.macros?.fat || results.fat || 0,
+                    })
+                    console.log('Nutrition targets saved successfully')
+                  } catch (error) {
+                    console.error('Failed to save nutrition targets:', error)
+                  }
                 }
-              }
-              onComplete()
-            }} className="flex-1">
+                onComplete()
+              }}
+              className="flex-1"
+            >
               Complete Setup
             </Button>
           </div>
