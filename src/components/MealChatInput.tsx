@@ -3,9 +3,19 @@
 import { useState, useRef } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Camera, Send, X, Mic, MicOff, Loader2, Database, CheckCircle } from 'lucide-react'
+import {
+  Camera,
+  Send,
+  X,
+  Mic,
+  MicOff,
+  Loader2,
+  Database,
+  CheckCircle,
+} from 'lucide-react'
 import { useSpeechRecognition } from '@/hooks/useSpeechRecognition'
 import { useImageUpload } from '@/hooks/useImageUpload'
+import Image from 'next/image'
 
 interface MealChatInputProps {
   onSendMessage: (message: string, image?: File) => void
@@ -15,11 +25,17 @@ interface MealChatInputProps {
   showSaveSuccess?: boolean
 }
 
-export default function MealChatInput({ onSendMessage, disabled, isLoading, isSavingMeal, showSaveSuccess }: MealChatInputProps) {
+export default function MealChatInput({
+  onSendMessage,
+  disabled,
+  isLoading,
+  isSavingMeal,
+  showSaveSuccess,
+}: MealChatInputProps) {
   const [message, setMessage] = useState('')
   const [isExpanded, setIsExpanded] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
-  
+
   const {
     isRecording,
     transcript,
@@ -29,21 +45,22 @@ export default function MealChatInput({ onSendMessage, disabled, isLoading, isSa
     clearTranscript,
   } = useSpeechRecognition()
 
-  const { selectedImage, previewUrl, handleImageChange, convertToBase64 } = useImageUpload()
+  const { selectedImage, previewUrl, handleImageChange, convertToBase64 } =
+    useImageUpload()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    
+
     const messageText = message.trim() || transcript.trim()
     if (!messageText && !selectedImage) return
 
     await onSendMessage(messageText, selectedImage || undefined)
-    
+
     // Reset form
     setMessage('')
     clearTranscript()
     setIsExpanded(false)
-    
+
     // Clear image
     if (selectedImage) {
       handleImageChange(null)
@@ -136,7 +153,7 @@ export default function MealChatInput({ onSendMessage, disabled, isLoading, isSa
             {/* Image preview */}
             {previewUrl && (
               <div className="mb-4 relative">
-                <img
+                <Image
                   src={previewUrl}
                   alt="Meal preview"
                   className="max-w-full h-32 object-cover rounded-lg border"
@@ -187,7 +204,11 @@ export default function MealChatInput({ onSendMessage, disabled, isLoading, isSa
                 isRecording ? 'bg-red-100 text-red-600' : ''
               }`}
             >
-              {isRecording ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
+              {isRecording ? (
+                <MicOff className="w-4 h-4" />
+              ) : (
+                <Mic className="w-4 h-4" />
+              )}
             </Button>
           )}
 

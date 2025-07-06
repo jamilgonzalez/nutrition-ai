@@ -2,16 +2,13 @@
 
 import { SignedIn } from '@clerk/nextjs'
 import { Button } from '@/components/ui/button'
-import { useChat } from 'ai/react'
-import { useState, useRef, useEffect } from 'react'
+import { useChat } from '@ai-sdk/react'
+import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import NutritionDisplay, {
   type NutritionData,
 } from '@/components/NutritionDisplay'
 import ImageUpload, { type ImageUploadRef } from '@/components/ImageUpload'
-import SpeechToText from '@/components/SpeechToText'
-import ActionButtons from '@/components/ActionButtons'
-import AnalysisDisplay from '@/components/AnalysisDisplay'
 import MacroCard from '@/components/MacroCard'
 import MealChatInput from '@/components/MealChatInput'
 import { useSpeechRecognition } from '@/hooks/useSpeechRecognition'
@@ -137,7 +134,7 @@ export default function Home() {
     if (!message && !image) return
 
     try {
-      let content =
+      const content =
         message ||
         'Analyze this meal image and provide detailed nutritional information.'
 
@@ -170,10 +167,13 @@ export default function Home() {
     }
   }
 
-  const generateAndSaveNutritionData = async (message: string, image?: File) => {
+  const generateAndSaveNutritionData = async (
+    message: string,
+    image?: File
+  ) => {
     setIsSavingMeal(true)
     try {
-      let content =
+      const content =
         message ||
         'Analyze this meal image and provide detailed nutritional information.'
 
@@ -227,14 +227,13 @@ export default function Home() {
       })
 
       console.log('Meal saved:', savedMeal)
-      
+
       // Dispatch event to refresh the MacroCard
       window.dispatchEvent(new CustomEvent('mealSaved', { detail: savedMeal }))
 
       // Show success indicator
       setShowSaveSuccess(true)
       setTimeout(() => setShowSaveSuccess(false), 3000)
-
     } catch (error) {
       console.error('Error generating and saving nutrition data:', error)
     } finally {
@@ -287,9 +286,9 @@ export default function Home() {
             </div>
           </main>
 
-          <MealChatInput 
-            onSendMessage={handleMealChat} 
-            disabled={isLoading} 
+          <MealChatInput
+            onSendMessage={handleMealChat}
+            disabled={isLoading}
             isLoading={isLoading}
             isSavingMeal={isSavingMeal}
             showSaveSuccess={showSaveSuccess}

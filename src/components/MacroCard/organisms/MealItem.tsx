@@ -59,75 +59,105 @@ export default function MealItem({ meal, onEdit, onDelete }: MealItemProps) {
             {/* Health Score and Meal Type */}
             <div className="flex items-center gap-2 flex-wrap">
               <Badge variant="secondary" className="bg-blue-100 text-blue-800">
-                Health Score: {meal.fullNutritionData.healthScore}/10
+                Health Score: {meal.fullNutritionData?.healthScore}/10
               </Badge>
               <Badge variant="outline" className="capitalize">
-                {meal.fullNutritionData.mealType}
+                {meal.fullNutritionData?.mealType}
               </Badge>
             </div>
 
             {/* Portion Size */}
             <div>
-              <h6 className="font-medium text-gray-700 text-xs mb-1">Portion Size</h6>
-              <p className="text-sm text-gray-600">{meal.fullNutritionData.portionSize}</p>
+              <h6 className="font-medium text-gray-700 text-xs mb-1">
+                Portion Size
+              </h6>
+              <p className="text-sm text-gray-600">
+                {meal.fullNutritionData?.portionSize}
+              </p>
             </div>
 
             {/* Ingredients */}
             <div>
-              <h6 className="font-medium text-gray-700 text-xs mb-1">Ingredients</h6>
+              <h6 className="font-medium text-gray-700 text-xs mb-1">
+                Ingredients
+              </h6>
               <div className="flex flex-wrap gap-1">
-                {meal.fullNutritionData.ingredients.map((ingredient, index) => (
-                  <Badge key={index} variant="outline" className="text-xs">
-                    {ingredient}
-                  </Badge>
-                ))}
+                {meal.fullNutritionData?.ingredients.map(
+                  (ingredient, index) => (
+                    <Badge key={index} variant="outline" className="text-xs">
+                      {ingredient}
+                    </Badge>
+                  )
+                )}
               </div>
             </div>
 
             {/* Detailed Macros */}
             <div>
-              <h6 className="font-medium text-gray-700 text-xs mb-2">Detailed Macros</h6>
+              <h6 className="font-medium text-gray-700 text-xs mb-2">
+                Detailed Macros
+              </h6>
               <div className="grid grid-cols-2 gap-2 text-sm">
                 <div className="flex justify-between">
                   <span className="text-gray-600">Fiber:</span>
-                  <span className="font-medium">{meal.fullNutritionData.macros.fiber}g</span>
+                  <span className="font-medium">
+                    {meal.fullNutritionData?.macros.fiber}g
+                  </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">Sugar:</span>
-                  <span className="font-medium">{meal.fullNutritionData.macros.sugar}g</span>
+                  <span className="font-medium">
+                    {meal.fullNutritionData?.macros.sugar}g
+                  </span>
                 </div>
               </div>
             </div>
 
             {/* Micronutrients */}
-            {Object.keys(meal.fullNutritionData.micronutrients).length > 0 && (
-              <div>
-                <h6 className="font-medium text-gray-700 text-xs mb-2">Micronutrients</h6>
-                <div className="grid grid-cols-2 gap-2 text-sm">
-                  {Object.entries(meal.fullNutritionData.micronutrients).map(([key, value]) => (
-                    <div key={key} className="flex justify-between">
-                      <span className="text-gray-600 capitalize">{key}:</span>
-                      <span className="font-medium">{value}mg</span>
-                    </div>
-                  ))}
+            {meal.fullNutritionData?.micronutrients &&
+              Object.keys(meal.fullNutritionData?.micronutrients).length >
+                0 && (
+                <div>
+                  <h6 className="font-medium text-gray-700 text-xs mb-2">
+                    Micronutrients
+                  </h6>
+                  <div className="grid grid-cols-2 gap-2 text-sm">
+                    {Object.entries(meal.fullNutritionData?.micronutrients).map(
+                      ([key, value]) => (
+                        <div key={key} className="flex justify-between">
+                          <span className="text-gray-600 capitalize">
+                            {key}:
+                          </span>
+                          <span className="font-medium">{value}mg</span>
+                        </div>
+                      )
+                    )}
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
 
             {/* Recommendations */}
-            {meal.fullNutritionData.recommendations.length > 0 && (
-              <div>
-                <h6 className="font-medium text-gray-700 text-xs mb-2">Recommendations</h6>
-                <ul className="space-y-1">
-                  {meal.fullNutritionData.recommendations.map((rec, index) => (
-                    <li key={index} className="text-sm text-gray-600 flex items-start gap-2">
-                      <span className="text-green-500 mt-1">•</span>
-                      <span>{rec}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
+            {meal.fullNutritionData?.recommendations &&
+              meal.fullNutritionData?.recommendations?.length > 0 && (
+                <div>
+                  <h6 className="font-medium text-gray-700 text-xs mb-2">
+                    Recommendations
+                  </h6>
+                  <ul className="space-y-1">
+                    {meal.fullNutritionData?.recommendations.map(
+                      (rec, index) => (
+                        <li
+                          key={index}
+                          className="text-sm text-gray-600 flex items-start gap-2"
+                        >
+                          <span className="text-green-500 mt-1">•</span>
+                          <span>{rec}</span>
+                        </li>
+                      )
+                    )}
+                  </ul>
+                </div>
+              )}
           </div>
         )}
       </CardContent>
