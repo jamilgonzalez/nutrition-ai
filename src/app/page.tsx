@@ -23,6 +23,8 @@ export default function Home() {
   const [nutritionData, setNutritionData] = useState<NutritionData | null>(null)
   const [isAnalyzingStructured, setIsAnalyzingStructured] = useState(false)
   const [showStructuredView, setShowStructuredView] = useState(false)
+  const [isSavingMeal, setIsSavingMeal] = useState(false)
+  const [showSaveSuccess, setShowSaveSuccess] = useState(false)
   const imageUploadRef = useRef<ImageUploadRef>(null)
 
   const { messages, append, isLoading } = useChat({
@@ -169,6 +171,7 @@ export default function Home() {
   }
 
   const generateAndSaveNutritionData = async (message: string, image?: File) => {
+    setIsSavingMeal(true)
     try {
       let content =
         message ||
@@ -220,16 +223,22 @@ export default function Home() {
           carbs: nutritionData.macros?.carbohydrates || 0,
           fat: nutritionData.macros?.fat || 0,
         },
+        fullNutritionData: nutritionData,
       })
 
       console.log('Meal saved:', savedMeal)
       
-      // Optionally show a success message or update UI
-      // You could dispatch an event here to refresh the MacroCard
+      // Dispatch event to refresh the MacroCard
       window.dispatchEvent(new CustomEvent('mealSaved', { detail: savedMeal }))
+
+      // Show success indicator
+      setShowSaveSuccess(true)
+      setTimeout(() => setShowSaveSuccess(false), 3000)
 
     } catch (error) {
       console.error('Error generating and saving nutrition data:', error)
+    } finally {
+      setIsSavingMeal(false)
     }
   }
 
@@ -278,7 +287,13 @@ export default function Home() {
             </div>
           </main>
 
-          <MealChatInput onSendMessage={handleMealChat} disabled={isLoading} />
+          <MealChatInput 
+            onSendMessage={handleMealChat} 
+            disabled={isLoading} 
+            isLoading={isLoading}
+            isSavingMeal={isSavingMeal}
+            showSaveSuccess={showSaveSuccess}
+          />
         </div>
       </SignedIn>
     </>

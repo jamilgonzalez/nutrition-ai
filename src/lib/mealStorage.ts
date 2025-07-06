@@ -10,6 +10,29 @@ export interface RecordedMeal {
     carbs: number
     fat: number
   }
+  fullNutritionData?: {
+    mealName: string
+    totalCalories: number
+    macros: {
+      protein: number
+      carbohydrates: number
+      fat: number
+      fiber: number
+      sugar: number
+    }
+    micronutrients: {
+      sodium?: number
+      potassium?: number
+      vitaminC?: number
+      calcium?: number
+      iron?: number
+    }
+    ingredients: string[]
+    healthScore: number
+    recommendations: string[]
+    portionSize: string
+    mealType: 'breakfast' | 'lunch' | 'dinner' | 'snack' | 'other'
+  }
 }
 
 const MEALS_STORAGE_KEY = 'recorded_meals'

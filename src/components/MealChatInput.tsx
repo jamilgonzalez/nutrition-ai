@@ -3,16 +3,19 @@
 import { useState, useRef } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Camera, Send, X, Mic, MicOff } from 'lucide-react'
+import { Camera, Send, X, Mic, MicOff, Loader2, Database, CheckCircle } from 'lucide-react'
 import { useSpeechRecognition } from '@/hooks/useSpeechRecognition'
 import { useImageUpload } from '@/hooks/useImageUpload'
 
 interface MealChatInputProps {
   onSendMessage: (message: string, image?: File) => void
   disabled?: boolean
+  isLoading?: boolean
+  isSavingMeal?: boolean
+  showSaveSuccess?: boolean
 }
 
-export default function MealChatInput({ onSendMessage, disabled }: MealChatInputProps) {
+export default function MealChatInput({ onSendMessage, disabled, isLoading, isSavingMeal, showSaveSuccess }: MealChatInputProps) {
   const [message, setMessage] = useState('')
   const [isExpanded, setIsExpanded] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -90,6 +93,31 @@ export default function MealChatInput({ onSendMessage, disabled }: MealChatInput
 
       {/* Chat input container */}
       <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 z-50">
+        {/* Loading indicators */}
+        {(isLoading || isSavingMeal || showSaveSuccess) && (
+          <div className="mb-3 flex items-center justify-center gap-2 text-sm">
+            {(isLoading || isSavingMeal) && (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" />
+                <span className="text-gray-600">
+                  {isLoading && !isSavingMeal && 'Analyzing meal...'}
+                  {isSavingMeal && (
+                    <>
+                      <Database className="w-4 h-4 inline mr-1" />
+                      Saving nutrition data...
+                    </>
+                  )}
+                </span>
+              </>
+            )}
+            {showSaveSuccess && !isLoading && !isSavingMeal && (
+              <>
+                <CheckCircle className="w-4 h-4 text-green-600" />
+                <span className="text-green-600">Meal saved successfully!</span>
+              </>
+            )}
+          </div>
+        )}
         {/* Expanded view */}
         {isExpanded && (
           <div className="mb-4">
