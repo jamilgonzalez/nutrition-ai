@@ -4,10 +4,6 @@ on:
   push:
     # Run on all branches
     branches: ['**']
-  pull_request:
-    # Run on PRs targeting main branches
-    branches:
-      - main
 
 jobs:
   build-and-test:
