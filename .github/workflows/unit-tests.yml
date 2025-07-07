@@ -1,4 +1,4 @@
-name: Unit Tests
+name: Build and Test
 
 on:
   push:
@@ -10,9 +10,9 @@ on:
       - main
 
 jobs:
-  tests:
+  build-and-test:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -32,6 +32,12 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
+
+      - name: Run linter
+        run: pnpm run lint
+
+      - name: Build application
+        run: pnpm run build
 
       - name: Run unit tests
         run: pnpm run test
