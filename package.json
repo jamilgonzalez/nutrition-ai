@@ -15,6 +15,7 @@
     "@ai-sdk/react": "^1.2.12",
     "@clerk/nextjs": "^6.23.2",
     "@openrouter/ai-sdk-provider": "^0.7.2",
+    "@radix-ui/react-avatar": "^1.1.10",
     "@radix-ui/react-progress": "^1.1.7",
     "@radix-ui/react-slot": "^1.2.3",
     "@supabase/ssr": "^0.6.1",

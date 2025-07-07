@@ -39,7 +39,12 @@ export default function RootLayout({
           className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         >
           <header className="flex items-center justify-between p-4 border-b">
-            <h1 className="text-2xl font-bold">Nutrition AI</h1>
+            <h1 className="text-xl font-bold flex items-center gap-2">
+              <div className="w-8 h-8 bg-black rounded-full flex items-center justify-center">
+                <span className="text-white font-bold text-sm">N</span>
+              </div>
+              Nutrition AI
+            </h1>
             <div className="flex items-center gap-4">
               <SignedOut>
                 <SignInButton />
