@@ -14,7 +14,8 @@ export default function MacroProgressBar({
       <div className="text-center">
         <span className="text-xs font-medium">{name}</span>
         <div className="text-xs text-muted-foreground transition-all duration-500">
-          <span className="transition-all duration-500">{current}</span>/<span className="transition-all duration-300">{goal}</span>g
+          <span className="transition-all duration-500">{current}</span>/
+          <span className="transition-all duration-300">{goal}</span>g
         </div>
       </div>
       <div className="h-2 bg-secondary rounded-full overflow-hidden">
@@ -22,7 +23,7 @@ export default function MacroProgressBar({
           className="h-full transition-all duration-700 ease-out"
           style={{
             width: `${percentage}%`,
-            backgroundColor: color,
+            backgroundColor: '#000000',
           }}
         />
       </div>

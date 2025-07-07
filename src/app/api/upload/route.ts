@@ -24,7 +24,7 @@ export async function POST(req: Request) {
       const latestMessage = messages[messages.length - 1]
 
       // Search for additional nutrition info
-      const searchQuery = `Nutrition facts, calories, protein, carbs and fat analysis for ${latestMessage.content}`
+      const searchQuery = `Nutrition facts: calories, protein, carbs, fat, sugar for ${latestMessage.content}`
       const searchResults = await tvly.search(searchQuery, {
         searchDepth: 'advanced',
         topic: 'general',

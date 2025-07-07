@@ -67,7 +67,7 @@ export default function MacroCard() {
     }
 
     window.addEventListener('mealSaved', handleMealSaved)
-    
+
     return () => {
       window.removeEventListener('mealSaved', handleMealSaved)
     }
@@ -108,7 +108,7 @@ export default function MacroCard() {
     <div className="w-full max-w-4xl mx-auto mb-8">
       <Card>
         <CardHeader>
-          <CardTitle className="text-center">Today&apos;s Nutrition</CardTitle>
+          <CardTitle className="text-center">{"Today's Nutrition"}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
           {/* Calories Overview */}

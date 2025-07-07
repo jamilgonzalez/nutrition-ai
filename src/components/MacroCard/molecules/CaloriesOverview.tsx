@@ -13,7 +13,7 @@ export default function CaloriesOverview({
   dailyGoal,
 }: CaloriesOverviewProps) {
   const percentage = (consumed / dailyGoal) * 100
-  const gradientColor = getGradientColor(percentage)
+  // const gradientColor = getGradientColor(percentage)
 
   return (
     <div className="text-center space-y-2">
@@ -28,12 +28,14 @@ export default function CaloriesOverview({
           className="h-full transition-all duration-700 ease-out"
           style={{
             width: `${percentage}%`,
-            backgroundColor: gradientColor,
+            backgroundColor: '#000000',
           }}
         />
       </div>
       <div className="text-xs text-muted-foreground transition-all duration-500">
-        <span className="transition-all duration-500">{consumed}</span> consumed • <span className="transition-all duration-500">{remaining}</span> remaining
+        <span className="transition-all duration-500">{consumed}</span> consumed
+        • <span className="transition-all duration-500">{remaining}</span>{' '}
+        remaining
       </div>
     </div>
   )
