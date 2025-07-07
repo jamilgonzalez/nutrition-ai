@@ -20,7 +20,7 @@ export default function MealActions({
   return (
     <div className="flex items-center gap-2">
       <span className="text-xs text-gray-500">{formattedTime}</span>
-      <ActionButton icon={Edit2} onClick={onEdit} variant="edit" />
+      {/* <ActionButton icon={Edit2} onClick={onEdit} variant="edit" /> */}
       <ActionButton icon={Trash2} onClick={onDelete} variant="delete" />
     </div>
   )

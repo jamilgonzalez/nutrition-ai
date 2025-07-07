@@ -9,7 +9,7 @@ export default function MacronutrientGrid({ data }: MacronutrientGridProps) {
   return (
     <div className="space-y-3">
       <h4 className="font-semibold text-sm">Macronutrients</h4>
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+      <div className="grid grid-cols-3 md:grid-cols-4 gap-3">
         <MacroProgressBar
           current={data.protein.current}
           goal={data.protein.goal}
@@ -25,11 +25,11 @@ export default function MacronutrientGrid({ data }: MacronutrientGridProps) {
           goal={data.fat.goal}
           name="Fat"
         />
-        <MacroProgressBar
+        {/* <MacroProgressBar
           current={data.sugar.current}
           goal={data.sugar.goal}
           name="Sugar"
-        />
+        /> */}
       </div>
     </div>
   )
