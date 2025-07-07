@@ -1,10 +1,10 @@
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { ChevronDown, ChevronUp, Trash2 } from 'lucide-react'
+import { Separator } from '@/components/ui/separator'
+import { ChevronDown, ChevronUp, Trash2, Lightbulb, CheckCircle, AlertTriangle, ExternalLink, Utensils, ChefHat, BarChart3 } from 'lucide-react'
 import { useState } from 'react'
 import { type RecordedMeal } from '@/lib/mealStorage'
-import SourceCitation from '../../SourceCitation'
 
 interface MealItemData {
   id: string
@@ -97,7 +97,8 @@ export default function MobileMealItem({
 
           {/* Expanded Details */}
           {isExpanded && hasFullData && (
-            <div className="mt-4 pt-4 border-t border-slate-200 space-y-4">
+            <div className="mt-4 space-y-4">
+              <Separator />
               {/* Health Score and Meal Type */}
               <div className="flex items-center gap-2 flex-wrap">
                 <Badge variant="secondary" className="bg-blue-50 text-blue-700 text-xs">
@@ -111,9 +112,10 @@ export default function MobileMealItem({
               {/* Portion Size */}
               {item.fullMeal?.fullNutritionData?.portionSize && (
                 <div>
-                  <h6 className="font-medium text-slate-700 text-xs mb-1">
+                  <h4 className="text-sm font-medium text-slate-700 flex items-center gap-2 mb-1">
+                    <Utensils className="w-4 h-4" />
                     Portion Size
-                  </h6>
+                  </h4>
                   <p className="text-xs text-slate-600">
                     {item.fullMeal.fullNutritionData.portionSize}
                   </p>
@@ -123,9 +125,10 @@ export default function MobileMealItem({
               {/* Ingredients */}
               {item.fullMeal?.fullNutritionData?.ingredients && item.fullMeal.fullNutritionData.ingredients.length > 0 && (
                 <div>
-                  <h6 className="font-medium text-slate-700 text-xs mb-1">
+                  <h4 className="text-sm font-medium text-slate-700 flex items-center gap-2 mb-1">
+                    <ChefHat className="w-4 h-4" />
                     Ingredients
-                  </h6>
+                  </h4>
                   <div className="flex flex-wrap gap-1">
                     {item.fullMeal.fullNutritionData.ingredients.map(
                       (ingredient, index) => (
@@ -140,10 +143,13 @@ export default function MobileMealItem({
 
               {/* Detailed Macros */}
               {item.fullMeal?.fullNutritionData?.macros && (
-                <div>
-                  <h6 className="font-medium text-slate-700 text-xs mb-2">
+                <>
+                  <Separator />
+                  <div>
+                  <h4 className="text-sm font-medium text-slate-700 flex items-center gap-2 mb-2">
+                    <BarChart3 className="w-4 h-4" />
                     Detailed Macros
-                  </h6>
+                  </h4>
                   <div className="grid grid-cols-2 gap-2 text-xs">
                     {item.fullMeal.fullNutritionData.macros.fiber && (
                       <div className="flex justify-between">
@@ -162,36 +168,80 @@ export default function MobileMealItem({
                       </div>
                     )}
                   </div>
-                </div>
+                  </div>
+                </>
               )}
 
               {/* Recommendations */}
               {item.fullMeal?.fullNutritionData?.recommendations && 
                item.fullMeal.fullNutritionData.recommendations.length > 0 && (
-                <div>
-                  <h6 className="font-medium text-slate-700 text-xs mb-2">
-                    Recommendations
-                  </h6>
-                  <ul className="space-y-1">
+                <>
+                  <Separator />
+                  <div className="space-y-2">
+                  <h4 className="text-sm font-medium text-slate-700 flex items-center gap-2">
+                    <Lightbulb className="w-4 h-4" />
+                    AI Recommendations
+                  </h4>
+                  <div className="space-y-1">
                     {item.fullMeal.fullNutritionData.recommendations.map(
-                      (rec, index) => (
-                        <li
-                          key={index}
-                          className="text-xs text-slate-600 flex items-start gap-2"
-                        >
-                          <span className="text-green-500 mt-0.5">•</span>
-                          <span>{rec}</span>
-                        </li>
-                      )
+                      (rec, index) => {
+                        // Handle both string format and object format
+                        const recText = typeof rec === 'string' ? rec : (rec as any).text || rec
+                        const recType = typeof rec === 'object' && (rec as any).type ? (rec as any).type : 'positive'
+                        
+                        return (
+                          <div
+                            key={index}
+                            className={`p-2 rounded-md border text-xs ${
+                              recType === "positive"
+                                ? "bg-green-50 border-green-200 text-green-800"
+                                : "bg-amber-50 border-amber-200 text-amber-800"
+                            }`}
+                          >
+                            <div className="flex items-start gap-1">
+                              {recType === "positive" ? (
+                                <CheckCircle className="w-3 h-3 mt-0.5 flex-shrink-0" />
+                              ) : (
+                                <AlertTriangle className="w-3 h-3 mt-0.5 flex-shrink-0" />
+                              )}
+                              <p className="leading-relaxed">{recText}</p>
+                            </div>
+                          </div>
+                        )
+                      }
                     )}
-                  </ul>
-                </div>
+                  </div>
+                  </div>
+                </>
               )}
 
               {/* Sources */}
               {item.fullMeal?.fullNutritionData?.sources &&
                item.fullMeal.fullNutritionData.sources.length > 0 && (
-                <SourceCitation sources={item.fullMeal.fullNutritionData.sources} />
+                <>
+                  <Separator />
+                  <div className="space-y-2">
+                  <h4 className="text-sm font-medium text-slate-700 flex items-center gap-2">
+                    <ExternalLink className="w-4 h-4" />
+                    Data Sources
+                  </h4>
+                  <div className="grid grid-cols-1 gap-1">
+                    {item.fullMeal.fullNutritionData.sources.map((source, index) => (
+                      <Button
+                        key={index}
+                        variant="outline"
+                        size="sm"
+                        className="h-auto py-1 px-2 text-xs bg-white hover:bg-slate-50 border-slate-200 flex items-center justify-start w-full"
+                        onClick={() => source.url && window.open(source.url, '_blank')}
+                      >
+                        <span className="mr-1 flex-shrink-0">🔗</span>
+                        <span className="truncate">{source.title || source.domain}</span>
+                        <ExternalLink className="w-2 h-2 ml-1 flex-shrink-0" />
+                      </Button>
+                    ))}
+                  </div>
+                  </div>
+                </>
               )}
             </div>
           )}
