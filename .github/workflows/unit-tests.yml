@@ -5,29 +5,30 @@ on:
     # Run on all branches
     branches: ['**']
   pull_request:
-    # Run on PRs targeting main branche
+    # Run on PRs targeting main branches
     branches:
       - main
 
 jobs:
   tests:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 1
 
+      - name: Install pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: latest
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '18'
           cache: 'pnpm'
-
-      - name: Install pnpm
-        uses: pnpm/action-setup@v2
-        with:
-          version: latest
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
