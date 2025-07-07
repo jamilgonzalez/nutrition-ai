@@ -32,6 +32,13 @@ export interface RecordedMeal {
     recommendations: string[]
     portionSize: string
     mealType: 'breakfast' | 'lunch' | 'dinner' | 'snack' | 'other'
+    sources?: Array<{
+      title: string
+      url: string
+      domain: string
+      snippet?: string
+      relevance: 'high' | 'medium' | 'low'
+    }>
   }
 }
 

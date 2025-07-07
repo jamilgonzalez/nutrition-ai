@@ -2,6 +2,7 @@ import { streamText, generateObject } from 'ai'
 import { createOpenRouter } from '@openrouter/ai-sdk-provider'
 import { tavily } from '@tavily/core'
 import { z } from 'zod'
+import { nutritionSchema } from './types'
 
 const openrouter = createOpenRouter({
   apiKey: process.env.OPENROUTER_API_KEY,
@@ -13,35 +14,6 @@ const tvly = tavily({
 
 const imageModel = openrouter.chat('openai/gpt-4o-mini')
 
-// Define the nutrition data schema
-const nutritionSchema = z.object({
-  mealName: z.string().describe('Name or description of the meal'),
-  totalCalories: z.number().describe('Estimated total calories'),
-  macros: z.object({
-    protein: z.number().describe('Protein content in grams'),
-    carbohydrates: z.number().describe('Carbohydrates content in grams'),
-    fat: z.number().describe('Fat content in grams'),
-    fiber: z.number().describe('Fiber content in grams'),
-    sugar: z.number().describe('Sugar content in grams'),
-  }),
-  micronutrients: z.object({
-    sodium: z.number().optional().describe('Sodium content in mg'),
-    potassium: z.number().optional().describe('Potassium content in mg'),
-    vitaminC: z.number().optional().describe('Vitamin C content in mg'),
-    calcium: z.number().optional().describe('Calcium content in mg'),
-    iron: z.number().optional().describe('Iron content in mg'),
-  }),
-  ingredients: z.array(z.string()).describe('List of identified ingredients'),
-  healthScore: z.number().min(1).max(10).describe('Health score from 1-10'),
-  recommendations: z
-    .array(z.string())
-    .describe('Nutritional recommendations or insights'),
-  portionSize: z.string().describe('Estimated portion size'),
-  mealType: z
-    .enum(['breakfast', 'lunch', 'dinner', 'snack', 'other'])
-    .describe('Type of meal'),
-})
-
 export async function POST(req: Request) {
   const { messages, structured = false } = await req.json()
 
@@ -52,9 +24,11 @@ export async function POST(req: Request) {
       const latestMessage = messages[messages.length - 1]
 
       // Search for additional nutrition info
-      const searchQuery =
-        'nutrition facts calories protein carbs fat analysis meal'
-      const searchResults = await tvly.search(searchQuery)
+      const searchQuery = `Nutrition facts, calories, protein, carbs and fat analysis for ${latestMessage.content}`
+      const searchResults = await tvly.search(searchQuery, {
+        searchDepth: 'advanced',
+        topic: 'general',
+      })
 
       const result = await generateObject({
         model: imageModel,
@@ -62,7 +36,7 @@ export async function POST(req: Request) {
         system: `You are an expert nutritionist. Analyze the meal image and provide detailed nutritional information.
         
         Use the following search results to enhance your analysis: ${JSON.stringify(
-          searchResults.results.slice(0, 3)
+          searchResults.results.slice(0, 5)
         )}
         
         Be as accurate as possible with your estimates. Consider:
@@ -71,7 +45,16 @@ export async function POST(req: Request) {
         - Common nutritional values for similar foods
         - Provide realistic estimates based on what you can see
         
-        For the health score, consider nutritional balance, processing level, and overall healthiness.`,
+        For the health score, consider nutritional balance, processing level, and overall healthiness.
+        
+        IMPORTANT: In your response, include a 'sources' array with the most relevant and trustworthy sources from the search results. Select 2-3 high-quality sources that directly support your nutritional analysis. For each source, provide:
+        - title: The title of the article/page
+        - url: The full URL
+        - domain: Just the domain name (e.g., "healthline.com")
+        - snippet: A brief relevant excerpt if available
+        - relevance: Rate as 'high', 'medium', or 'low' based on how directly it supports your analysis
+        
+        Prioritize sources from reputable nutrition and health websites like Healthline, Mayo Clinic, WebMD, USDA, or similar authoritative sources.`,
         messages: [latestMessage],
       })
 

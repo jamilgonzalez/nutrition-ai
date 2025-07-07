@@ -113,6 +113,7 @@ export default function Home() {
       }
 
       const data = await response.json()
+      console.log('Structured analysis response:', data)
       setNutritionData(data)
       setShowStructuredView(true)
 
@@ -211,6 +212,7 @@ export default function Home() {
       }
 
       const nutritionData = await response.json()
+      console.log('Structured nutrition data with sources:', nutritionData)
 
       // Save meal to database
       const savedMeal = saveMeal({

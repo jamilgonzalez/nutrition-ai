@@ -157,6 +157,8 @@ export default function MealChatInput({
                   src={previewUrl}
                   alt="Meal preview"
                   className="max-w-full h-32 object-cover rounded-lg border"
+                  width={100}
+                  height={75}
                 />
                 <Button
                   variant="ghost"

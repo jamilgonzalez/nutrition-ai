@@ -1,18 +1,38 @@
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { ChevronDown, ChevronUp } from 'lucide-react'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import MealImage from '../molecules/MealImage'
 import MealActions from '../molecules/MealActions'
 import MealNutrition from '../molecules/MealNutrition'
+import SourceCitation from '../../SourceCitation'
 import { MealItemProps } from '../types'
 
 export default function MealItem({ meal, onEdit, onDelete }: MealItemProps) {
   const [isExpanded, setIsExpanded] = useState(false)
+  const [isNewMeal, setIsNewMeal] = useState(false)
   const hasFullData = meal.fullNutritionData
 
+  // Check if this is a newly added meal (within last 3 seconds)
+  useEffect(() => {
+    const mealAge = Date.now() - new Date(meal.timestamp).getTime()
+    if (mealAge < 3000) {
+      // 3 seconds
+      setIsNewMeal(true)
+      // Remove the new meal flag after animation
+      const timer = setTimeout(() => setIsNewMeal(false), 1000)
+      return () => clearTimeout(timer)
+    }
+  }, [meal.timestamp])
+
   return (
-    <Card className="bg-gradient-to-r from-gray-50 to-green-50 border-gray-200 hover:shadow-sm transition-shadow">
+    <Card
+      className={`bg-gradient-to-r from-gray-50 to-green-50 border-gray-200 hover:shadow-sm transition-all duration-500 ${
+        isNewMeal
+          ? 'opacity-0 translate-y-2 animate-in fade-in slide-in-from-bottom-2'
+          : 'opacity-100 translate-y-0'
+      }`}
+    >
       <CardContent className="p-3">
         <div className="flex items-center gap-3">
           {/* Meal Image */}
@@ -113,29 +133,6 @@ export default function MealItem({ meal, onEdit, onDelete }: MealItemProps) {
               </div>
             </div>
 
-            {/* Micronutrients */}
-            {meal.fullNutritionData?.micronutrients &&
-              Object.keys(meal.fullNutritionData?.micronutrients).length >
-                0 && (
-                <div>
-                  <h6 className="font-medium text-gray-700 text-xs mb-2">
-                    Micronutrients
-                  </h6>
-                  <div className="grid grid-cols-2 gap-2 text-sm">
-                    {Object.entries(meal.fullNutritionData?.micronutrients).map(
-                      ([key, value]) => (
-                        <div key={key} className="flex justify-between">
-                          <span className="text-gray-600 capitalize">
-                            {key}:
-                          </span>
-                          <span className="font-medium">{value}mg</span>
-                        </div>
-                      )
-                    )}
-                  </div>
-                </div>
-              )}
-
             {/* Recommendations */}
             {meal.fullNutritionData?.recommendations &&
               meal.fullNutritionData?.recommendations?.length > 0 && (
@@ -143,7 +140,7 @@ export default function MealItem({ meal, onEdit, onDelete }: MealItemProps) {
                   <h6 className="font-medium text-gray-700 text-xs mb-2">
                     Recommendations
                   </h6>
-                  <ul className="space-y-1">
+                  <ul className="space-y-1 ">
                     {meal.fullNutritionData?.recommendations.map(
                       (rec, index) => (
                         <li
@@ -157,6 +154,12 @@ export default function MealItem({ meal, onEdit, onDelete }: MealItemProps) {
                     )}
                   </ul>
                 </div>
+              )}
+
+            {/* Sources */}
+            {meal.fullNutritionData?.sources &&
+              meal.fullNutritionData.sources.length > 0 && (
+                <SourceCitation sources={meal.fullNutritionData.sources} />
               )}
           </div>
         )}
