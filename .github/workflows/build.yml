@@ -12,6 +12,8 @@ jobs:
     strategy:
       matrix:
         node-version: [18, 20]
+    env:
+      TAVILY_API_KEY: ${{ secrets.TAVILY_API_KEY }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
