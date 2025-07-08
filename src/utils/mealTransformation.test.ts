@@ -10,27 +10,33 @@ import { RecordedMeal } from '@/lib/mealStorage'
 describe('mealTransformation utils', () => {
   describe('getMealType', () => {
     it('returns Breakfast for early morning hours', () => {
-      const date = new Date('2023-10-15T08:00:00Z')
+      const date = new Date()
+      date.setHours(8, 0, 0, 0) // 8 AM local time
       expect(getMealType(date)).toBe('Breakfast')
     })
 
     it('returns Lunch for midday hours', () => {
-      const date = new Date('2023-10-15T13:00:00Z')
+      const date = new Date()
+      date.setHours(13, 0, 0, 0) // 1 PM local time
       expect(getMealType(date)).toBe('Lunch')
     })
 
     it('returns Dinner for evening hours', () => {
-      const date = new Date('2023-10-15T18:00:00Z')
+      const date = new Date()
+      date.setHours(18, 0, 0, 0) // 6 PM local time
       expect(getMealType(date)).toBe('Dinner')
     })
 
     it('returns Snack for late night hours', () => {
-      const date = new Date('2023-10-15T22:00:00Z')
+      const date = new Date()
+      date.setHours(22, 0, 0, 0) // 10 PM local time
       expect(getMealType(date)).toBe('Snack')
     })
 
     it('handles string timestamps', () => {
-      expect(getMealType('2023-10-15T09:00:00Z')).toBe('Breakfast')
+      const testDate = new Date()
+      testDate.setHours(9, 0, 0, 0) // 9 AM local time
+      expect(getMealType(testDate.toISOString())).toBe('Breakfast')
     })
   })
 
@@ -48,11 +54,17 @@ describe('mealTransformation utils', () => {
   })
 
   describe('transformMealsToMobileFormat', () => {
+    const createLocalDate = (hour: number, minute: number = 0) => {
+      const date = new Date()
+      date.setHours(hour, minute, 0, 0)
+      return date
+    }
+    
     const mockMeals: RecordedMeal[] = [
       {
         id: '1',
         name: 'Scrambled Eggs',
-        timestamp: new Date('2023-10-15T08:00:00Z'),
+        timestamp: createLocalDate(8, 0), // 8:00 AM local time
         notes: 'Morning breakfast',
         nutritionData: {
           calories: 200,
@@ -84,7 +96,7 @@ describe('mealTransformation utils', () => {
       {
         id: '2',
         name: 'Toast',
-        timestamp: new Date('2023-10-15T08:15:00Z'),
+        timestamp: createLocalDate(8, 15), // 8:15 AM local time
         notes: 'More breakfast',
         nutritionData: {
           calories: 150,
@@ -116,7 +128,7 @@ describe('mealTransformation utils', () => {
       {
         id: '3',
         name: 'Grilled Chicken',
-        timestamp: new Date('2023-10-15T12:30:00Z'),
+        timestamp: createLocalDate(12, 30), // 12:30 PM local time
         notes: 'Lunch meal',
         nutritionData: {
           calories: 300,

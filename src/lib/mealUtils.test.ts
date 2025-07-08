@@ -33,27 +33,33 @@ Object.defineProperty(URL, 'createObjectURL', {
 describe('mealUtils', () => {
   describe('getMealType', () => {
     it('returns Breakfast for early morning hours', () => {
-      const morningDate = new Date('2023-01-01T08:00:00Z')
+      const morningDate = new Date()
+      morningDate.setHours(8, 0, 0, 0) // 8 AM local time
       expect(getMealType(morningDate)).toBe(MEAL_TYPES.BREAKFAST)
     })
 
     it('returns Lunch for midday hours', () => {
-      const lunchDate = new Date('2023-01-01T12:30:00Z')
+      const lunchDate = new Date()
+      lunchDate.setHours(12, 30, 0, 0) // 12:30 PM local time
       expect(getMealType(lunchDate)).toBe(MEAL_TYPES.LUNCH)
     })
 
     it('returns Dinner for evening hours', () => {
-      const dinnerDate = new Date('2023-01-01T18:00:00Z')
+      const dinnerDate = new Date()
+      dinnerDate.setHours(18, 0, 0, 0) // 6 PM local time
       expect(getMealType(dinnerDate)).toBe(MEAL_TYPES.DINNER)
     })
 
     it('returns Snack for late night hours', () => {
-      const lateDate = new Date('2023-01-01T21:00:00Z')
+      const lateDate = new Date()
+      lateDate.setHours(21, 0, 0, 0) // 9 PM local time
       expect(getMealType(lateDate)).toBe(MEAL_TYPES.SNACK)
     })
 
     it('handles string timestamps', () => {
-      expect(getMealType('2023-01-01T08:00:00Z')).toBe(MEAL_TYPES.BREAKFAST)
+      const testDate = new Date()
+      testDate.setHours(8, 0, 0, 0) // 8 AM local time
+      expect(getMealType(testDate.toISOString())).toBe(MEAL_TYPES.BREAKFAST)
     })
   })
 
@@ -72,10 +78,13 @@ describe('mealUtils', () => {
 
   describe('transformMealToMobileFormat', () => {
     it('transforms meal to mobile format correctly', () => {
+      const testDate = new Date()
+      testDate.setHours(12, 30, 0, 0) // 12:30 PM local time
+      
       const meal = {
         id: '1',
         name: 'Test Meal',
-        timestamp: '2023-01-01T12:30:00Z',
+        timestamp: testDate.toISOString(),
         nutritionData: {
           calories: 400,
           protein: 30,
@@ -116,23 +125,29 @@ describe('mealUtils', () => {
 
   describe('groupMealsForMobile', () => {
     it('groups meals by type correctly', () => {
+      const createLocalTime = (hour: number, minute: number = 0) => {
+        const date = new Date()
+        date.setHours(hour, minute, 0, 0)
+        return date.toISOString()
+      }
+      
       const meals = [
         {
           id: '1',
           name: 'Breakfast Item',
-          timestamp: '2023-01-01T08:00:00Z',
+          timestamp: createLocalTime(8, 0), // 8:00 AM local time
           nutritionData: { calories: 300, protein: 10, carbs: 40, fat: 8 },
         },
         {
           id: '2',
           name: 'Another Breakfast',
-          timestamp: '2023-01-01T08:30:00Z',
+          timestamp: createLocalTime(8, 30), // 8:30 AM local time
           nutritionData: { calories: 200, protein: 5, carbs: 30, fat: 5 },
         },
         {
           id: '3',
           name: 'Lunch Item',
-          timestamp: '2023-01-01T12:30:00Z',
+          timestamp: createLocalTime(12, 30), // 12:30 PM local time
           nutritionData: { calories: 400, protein: 30, carbs: 20, fat: 15 },
         },
       ]

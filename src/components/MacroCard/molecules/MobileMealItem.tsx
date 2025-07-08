@@ -59,6 +59,7 @@ export default function MobileMealItem({
                   size="sm"
                   className="p-1 h-6 w-6"
                   onClick={() => setIsExpanded(!isExpanded)}
+                  aria-label={isExpanded ? "Collapse meal details" : "Expand meal details"}
                 >
                   {isExpanded ? (
                     <ChevronUp className="w-3 h-3 text-slate-400" />
@@ -73,6 +74,7 @@ export default function MobileMealItem({
                   size="sm"
                   className="p-1 h-6 w-6 text-slate-400 hover:text-red-500"
                   onClick={onDelete}
+                  aria-label="Delete meal"
                 >
                   <Trash2 className="w-3 h-3" />
                 </Button>

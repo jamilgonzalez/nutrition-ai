@@ -3,10 +3,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import MobileNutritionTracker from './MobileNutritionTracker'
 import { MobileNutritionData } from '@/utils/mealTransformation'
 
-// Mock the child components
-vi.mock('../molecules/MobileHeader', () => ({
-  default: () => <div data-testid="mobile-header">Nutrition Tracker</div>,
-}))
+// Mock the child components - MobileHeader is not used in this component
 
 vi.mock('../molecules/MobileNutritionOverview', () => ({
   default: ({ caloriesConsumed, caloriesGoal }: { caloriesConsumed: number; caloriesGoal: number }) => (
@@ -95,7 +92,6 @@ describe('MobileNutritionTracker', () => {
       />
     )
 
-    expect(screen.getByTestId('mobile-header')).toBeInTheDocument()
     expect(screen.getByTestId('nutrition-overview')).toBeInTheDocument()
     expect(screen.getByTestId('macro-grid')).toBeInTheDocument()
     expect(screen.getByText('1200/2000 calories')).toBeInTheDocument()
@@ -113,7 +109,8 @@ describe('MobileNutritionTracker', () => {
       />
     )
 
-    expect(screen.getByText('🍳 Breakfast')).toBeInTheDocument()
+    expect(screen.getByText('🍳')).toBeInTheDocument()
+    expect(screen.getByText('Breakfast (2)')).toBeInTheDocument()
     expect(screen.getByText('2 items')).toBeInTheDocument()
     expect(screen.getByTestId('meal-item-1')).toBeInTheDocument()
     expect(screen.getByTestId('meal-item-2')).toBeInTheDocument()
@@ -131,7 +128,8 @@ describe('MobileNutritionTracker', () => {
       />
     )
 
-    expect(screen.getByText('No meals recorded yet')).toBeInTheDocument()
+    expect(screen.getByText('0 items')).toBeInTheDocument()
+    expect(screen.getByText("Today's Meals")).toBeInTheDocument()
   })
 
   it('calls onDeleteMeal when delete button is clicked', () => {
@@ -165,6 +163,6 @@ describe('MobileNutritionTracker', () => {
     )
 
     const mainDiv = container.firstChild as HTMLElement
-    expect(mainDiv).toHaveClass('flex', 'flex-col', 'flex-1', 'bg-slate-50', 'p-4', 'space-y-4')
+    expect(mainDiv).toHaveClass('flex-1', 'bg-gradient-to-b', 'from-slate-50', 'to-white')
   })
 })
