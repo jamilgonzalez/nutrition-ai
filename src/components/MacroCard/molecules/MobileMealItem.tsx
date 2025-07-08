@@ -16,6 +16,7 @@ import {
 } from 'lucide-react'
 import { useState } from 'react'
 import { type RecordedMeal } from '@/lib/mealStorage'
+import { safeOpenUrl } from '@/lib/mealUtils'
 
 interface MealItemData {
   id: string
@@ -259,13 +260,11 @@ export default function MobileMealItem({
                               variant="outline"
                               size="sm"
                               className="h-auto py-1 px-2 text-xs bg-white hover:bg-slate-50 border-slate-200 flex items-center justify-start w-full"
-                              onClick={() =>
-                                source.url && window.open(source.url, '_blank')
-                              }
+                              onClick={() => source.url && safeOpenUrl(source.url)}
                             >
                               <img 
-                                src={`https://www.google.com/s2/favicons?domain=${source.domain || new URL(source.url).hostname}&sz=16`}
-                                alt={`${source.domain || new URL(source.url).hostname} favicon`}
+                                src={`https://www.google.com/s2/favicons?domain=${source.domain || (() => { try { return new URL(source.url).hostname } catch { return 'unknown' } })()}&sz=16`}
+                                alt={`${source.domain || 'Website'} favicon`}
                                 className="w-4 h-4 mr-1 flex-shrink-0"
                                 onError={(e) => {
                                   e.currentTarget.style.display = 'none';
