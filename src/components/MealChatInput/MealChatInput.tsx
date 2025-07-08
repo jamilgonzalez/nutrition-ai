@@ -124,7 +124,7 @@ export default function MealChatInput({
           <InputWithButton
             value={displayText}
             onChange={(e) => setMessage(e.target.value)}
-            placeholder="Ask about your meals or add context..."
+            placeholder="Describe your meal..."
             disabled={disabled || isRecording}
             onSubmit={handleSubmit}
             hasContent={!!hasContent}

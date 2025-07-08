@@ -27,7 +27,8 @@ export function InputWithButton({
           onChange={onChange}
           placeholder={placeholder}
           disabled={disabled}
-          className="w-full pr-12"
+          className="w-full pr-12 text-base"
+          style={{ fontSize: '16px' }}
         />
         <Button
           type="submit"
