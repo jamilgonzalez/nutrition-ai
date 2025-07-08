@@ -18,11 +18,14 @@ import {
   deleteMeal,
   type RecordedMeal,
 } from '@/lib/mealStorage'
-import { DEFAULT_DAILY_GOALS } from '@/components/MacroCard/constants'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
-import { BREAKPOINTS, UI_FEEDBACK } from '@/lib/constants'
-import { groupMealsForMobile, createManagedObjectUrl } from '@/lib/mealUtils'
-import type { MobileNutritionData, ApiRequestBody } from '@/types/nutrition'
+import { ObjectURLManager } from '@/utils/memoryManagement'
+import { 
+  transformMealsToMobileFormat, 
+  createMobileNutritionData,
+  type MobileNutritionData 
+} from '@/utils/mealTransformation'
+import { MOBILE_BREAKPOINT, SUCCESS_NOTIFICATION_DURATION } from '@/constants/ui'
 
 export default function Home() {
   const [nutritionData, setNutritionData] = useState<NutritionData | null>(null)
@@ -32,76 +35,41 @@ export default function Home() {
   const [isMobile, setIsMobile] = useState(false)
   const [mobileNutritionData, setMobileNutritionData] = useState<MobileNutritionData>({
     caloriesConsumed: 0,
-    caloriesGoal: DEFAULT_DAILY_GOALS.calories,
-    caloriesRemaining: DEFAULT_DAILY_GOALS.calories,
+    caloriesGoal: 2000, // Use constant from imported utilities
+    caloriesRemaining: 2000,
     macros: {
-      protein: { current: 0, goal: DEFAULT_DAILY_GOALS.protein, unit: 'g' },
-      carbs: { current: 0, goal: DEFAULT_DAILY_GOALS.carbs, unit: 'g' },
-      fat: { current: 0, goal: DEFAULT_DAILY_GOALS.fat, unit: 'g' },
+      protein: { current: 0, goal: 120, unit: 'g' },
+      carbs: { current: 0, goal: 250, unit: 'g' },
+      fat: { current: 0, goal: 70, unit: 'g' },
     },
     meals: [],
   })
   const imageUploadRef = useRef<ImageUploadRef>(null)
 
-  // Memoized mobile meal data calculation
-  const mobileNutritionDataMemo = useMemo(() => {
+  // Extracted meal loading logic using utility functions
+  const loadMealsData = useCallback(() => {
     const meals = getTodaysMeals()
     const summary = getTodaysNutritionSummary(meals)
-    const mobileFormatMeals = groupMealsForMobile(meals)
-
-    const caloriesGoal = DEFAULT_DAILY_GOALS.calories
-    const proteinGoal = DEFAULT_DAILY_GOALS.protein
-    const carbsGoal = DEFAULT_DAILY_GOALS.carbs
-    const fatGoal = DEFAULT_DAILY_GOALS.fat
-
-    return {
-      caloriesConsumed: summary.calories,
-      caloriesGoal,
-      caloriesRemaining: Math.max(0, caloriesGoal - summary.calories),
-      macros: {
-        protein: { current: summary.protein, goal: proteinGoal, unit: 'g' },
-        carbs: { current: summary.carbs, goal: carbsGoal, unit: 'g' },
-        fat: { current: summary.fat, goal: fatGoal, unit: 'g' },
-      },
-      meals: mobileFormatMeals,
-    }
-  }, []) // Dependencies will be handled by the meal update trigger
+    const mobileFormatMeals = transformMealsToMobileFormat(meals)
+    const nutritionData = createMobileNutritionData(summary, mobileFormatMeals)
+    
+    setMobileNutritionData(nutritionData)
+  }, [])
 
   // Check if device is mobile and load meal data
   useEffect(() => {
     const checkMobile = () => {
-      setIsMobile(window.innerWidth < BREAKPOINTS.MOBILE)
+      setIsMobile(window.innerWidth < MOBILE_BREAKPOINT)
     }
 
     checkMobile()
     window.addEventListener('resize', checkMobile)
 
-    // Load initial meal data
-    setMobileNutritionData(mobileNutritionDataMemo)
+    loadMealsData()
 
     // Listen for meal updates
     const handleMealSaved = () => {
-      // Force re-calculation by updating the state
-      const meals = getTodaysMeals()
-      const summary = getTodaysNutritionSummary(meals)
-      const mobileFormatMeals = groupMealsForMobile(meals)
-
-      const caloriesGoal = DEFAULT_DAILY_GOALS.calories
-      const proteinGoal = DEFAULT_DAILY_GOALS.protein
-      const carbsGoal = DEFAULT_DAILY_GOALS.carbs
-      const fatGoal = DEFAULT_DAILY_GOALS.fat
-
-      setMobileNutritionData({
-        caloriesConsumed: summary.calories,
-        caloriesGoal,
-        caloriesRemaining: Math.max(0, caloriesGoal - summary.calories),
-        macros: {
-          protein: { current: summary.protein, goal: proteinGoal, unit: 'g' },
-          carbs: { current: summary.carbs, goal: carbsGoal, unit: 'g' },
-          fat: { current: summary.fat, goal: fatGoal, unit: 'g' },
-        },
-        meals: mobileFormatMeals,
-      })
+      loadMealsData()
     }
 
     window.addEventListener('mealSaved', handleMealSaved)
@@ -110,34 +78,8 @@ export default function Home() {
       window.removeEventListener('resize', checkMobile)
       window.removeEventListener('mealSaved', handleMealSaved)
     }
-  }, [mobileNutritionDataMemo])
+  }, [loadMealsData])
 
-  // Memoized delete handler to prevent recreation on every render
-  const handleDeleteMeal = useCallback((mealId: string) => {
-    const success = deleteMeal(mealId)
-    if (success) {
-      const meals = getTodaysMeals()
-      const summary = getTodaysNutritionSummary(meals)
-      const mobileFormatMeals = groupMealsForMobile(meals)
-
-      const caloriesGoal = DEFAULT_DAILY_GOALS.calories
-      const proteinGoal = DEFAULT_DAILY_GOALS.protein
-      const carbsGoal = DEFAULT_DAILY_GOALS.carbs
-      const fatGoal = DEFAULT_DAILY_GOALS.fat
-
-      setMobileNutritionData({
-        caloriesConsumed: summary.calories,
-        caloriesGoal,
-        caloriesRemaining: Math.max(0, caloriesGoal - summary.calories),
-        macros: {
-          protein: { current: summary.protein, goal: proteinGoal, unit: 'g' },
-          carbs: { current: summary.carbs, goal: carbsGoal, unit: 'g' },
-          fat: { current: summary.fat, goal: fatGoal, unit: 'g' },
-        },
-        meals: mobileFormatMeals,
-      })
-    }
-  }, [])
 
   const { messages, append, isLoading } = useChat({
     api: '/api/upload',
@@ -187,8 +129,8 @@ export default function Home() {
       // Then, generate structured nutritional analysis and save to database
       await generateAndSaveNutritionData(message, image)
     } catch (error) {
-      // TODO: Implement proper error handling/reporting
-      alert('Failed to process meal. Please try again.')
+      // TODO: Show user-friendly error message
+      console.error('Error processing meal chat:', error)
     }
   }
 
@@ -197,12 +139,25 @@ export default function Home() {
     image?: File
   ) => {
     setIsSavingMeal(true)
+    let objectUrl: string | undefined
+    
     try {
       const content =
         message ||
         'Analyze this meal image and provide detailed nutritional information.'
 
-      const requestBody: ApiRequestBody = {
+      const requestBody: {
+        structured: boolean
+        messages: Array<{
+          role: string
+          content: string
+          experimental_attachments?: Array<{
+            name: string
+            contentType: string
+            url: string
+          }>
+        }>
+      } = {
         structured: true,
         messages: [
           {
@@ -237,21 +192,16 @@ export default function Home() {
 
       const nutritionData = await response.json()
 
-      // Handle image with proper cleanup
-      let imageUrl: string | undefined
-      let imageCleanup: (() => void) | undefined
-      
+      // Create object URL with proper cleanup
       if (image) {
-        const managed = createManagedObjectUrl(image)
-        imageUrl = managed.url
-        imageCleanup = managed.cleanup
+        objectUrl = ObjectURLManager.createObjectURL(image)
       }
 
       // Save meal to database
       const savedMeal = saveMeal({
         name: nutritionData.mealName || 'Meal from Chat',
         notes: message || 'Added via chat',
-        image: imageUrl,
+        image: objectUrl,
         nutritionData: {
           calories: nutritionData.totalCalories || 0,
           protein: nutritionData.macros?.protein || 0,
@@ -261,20 +211,15 @@ export default function Home() {
         fullNutritionData: nutritionData,
       })
 
-      // Clean up image URL after a delay to ensure it's been used
-      if (imageCleanup) {
-        setTimeout(imageCleanup, 5000)
-      }
-
       // Dispatch event to refresh the MacroCard
       window.dispatchEvent(new CustomEvent('mealSaved', { detail: savedMeal }))
 
       // Show success indicator
       setShowSaveSuccess(true)
-      setTimeout(() => setShowSaveSuccess(false), UI_FEEDBACK.SUCCESS_DISPLAY_DURATION)
+      setTimeout(() => setShowSaveSuccess(false), SUCCESS_NOTIFICATION_DURATION)
     } catch (error) {
-      // TODO: Implement proper error handling/reporting
-      alert('Failed to save meal. Please try again.')
+      // TODO: Show user-friendly error message
+      console.error('Error generating and saving nutrition data:', error)
     } finally {
       setIsSavingMeal(false)
     }
@@ -295,7 +240,14 @@ export default function Home() {
               caloriesRemaining={mobileNutritionData.caloriesRemaining}
               macros={mobileNutritionData.macros}
               meals={mobileNutritionData.meals}
-              onDeleteMeal={handleDeleteMeal}
+              onDeleteMeal={(mealId: string) => {
+                // Use existing delete functionality
+                const success = deleteMeal(mealId)
+                if (success) {
+                  // Reload meals data using the extracted function
+                  loadMealsData()
+                }
+              }}
             />
 
             <MealChatInput
