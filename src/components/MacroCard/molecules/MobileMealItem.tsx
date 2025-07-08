@@ -2,7 +2,18 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
-import { ChevronDown, ChevronUp, Trash2, Lightbulb, CheckCircle, AlertTriangle, ExternalLink, Utensils, ChefHat, BarChart3 } from 'lucide-react'
+import {
+  ChevronDown,
+  ChevronUp,
+  Trash2,
+  Lightbulb,
+  CheckCircle,
+  AlertTriangle,
+  ExternalLink,
+  Utensils,
+  ChefHat,
+  BarChart3,
+} from 'lucide-react'
 import { useState } from 'react'
 import { type RecordedMeal } from '@/lib/mealStorage'
 
@@ -22,9 +33,9 @@ interface MobileMealItemProps {
   onDelete?: () => void
 }
 
-export default function MobileMealItem({ 
-  item, 
-  onDelete
+export default function MobileMealItem({
+  item,
+  onDelete,
 }: MobileMealItemProps) {
   const [isExpanded, setIsExpanded] = useState(false)
   const hasFullData = item.fullMeal?.fullNutritionData
@@ -42,9 +53,9 @@ export default function MobileMealItem({
             </div>
             <div className="flex items-center gap-2 flex-shrink-0">
               {hasFullData && (
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
+                <Button
+                  variant="ghost"
+                  size="sm"
                   className="p-1 h-6 w-6"
                   onClick={() => setIsExpanded(!isExpanded)}
                 >
@@ -56,9 +67,9 @@ export default function MobileMealItem({
                 </Button>
               )}
               {onDelete && (
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
+                <Button
+                  variant="ghost"
+                  size="sm"
                   className="p-1 h-6 w-6 text-slate-400 hover:text-red-500"
                   onClick={onDelete}
                 >
@@ -73,7 +84,7 @@ export default function MobileMealItem({
               variant="outline"
               className="bg-orange-50 text-orange-700 border-orange-200 text-xs px-2 py-0.5"
             >
-              {item.calories}cal
+              {item.calories} cal
             </Badge>
             <Badge
               variant="outline"
@@ -101,8 +112,12 @@ export default function MobileMealItem({
               <Separator />
               {/* Health Score and Meal Type */}
               <div className="flex items-center gap-2 flex-wrap">
-                <Badge variant="secondary" className="bg-blue-50 text-blue-700 text-xs">
-                  Health Score: {item.fullMeal?.fullNutritionData?.healthScore}/10
+                <Badge
+                  variant="secondary"
+                  className="bg-blue-50 text-blue-700 text-xs"
+                >
+                  Health Score: {item.fullMeal?.fullNutritionData?.healthScore}
+                  /10
                 </Badge>
                 <Badge variant="outline" className="capitalize text-xs">
                   {item.fullMeal?.fullNutritionData?.mealType}
@@ -123,126 +138,153 @@ export default function MobileMealItem({
               )}
 
               {/* Ingredients */}
-              {item.fullMeal?.fullNutritionData?.ingredients && item.fullMeal.fullNutritionData.ingredients.length > 0 && (
-                <div>
-                  <h4 className="text-sm font-medium text-slate-700 flex items-center gap-2 mb-1">
-                    <ChefHat className="w-4 h-4" />
-                    Ingredients
-                  </h4>
-                  <div className="flex flex-wrap gap-1">
-                    {item.fullMeal.fullNutritionData.ingredients.map(
-                      (ingredient, index) => (
-                        <Badge key={index} variant="outline" className="text-xs">
-                          {ingredient}
-                        </Badge>
-                      )
-                    )}
+              {item.fullMeal?.fullNutritionData?.ingredients &&
+                item.fullMeal.fullNutritionData.ingredients.length > 0 && (
+                  <div>
+                    <h4 className="text-sm font-medium text-slate-700 flex items-center gap-2 mb-1">
+                      <ChefHat className="w-4 h-4" />
+                      Ingredients
+                    </h4>
+                    <div className="flex flex-wrap gap-1">
+                      {item.fullMeal.fullNutritionData.ingredients.map(
+                        (ingredient, index) => (
+                          <Badge
+                            key={index}
+                            variant="outline"
+                            className="text-xs"
+                          >
+                            {ingredient}
+                          </Badge>
+                        )
+                      )}
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
 
               {/* Detailed Macros */}
               {item.fullMeal?.fullNutritionData?.macros && (
                 <>
                   <Separator />
                   <div>
-                  <h4 className="text-sm font-medium text-slate-700 flex items-center gap-2 mb-2">
-                    <BarChart3 className="w-4 h-4" />
-                    Detailed Macros
-                  </h4>
-                  <div className="grid grid-cols-2 gap-2 text-xs">
-                    {item.fullMeal.fullNutritionData.macros.fiber && (
-                      <div className="flex justify-between">
-                        <span className="text-slate-600">Fiber:</span>
-                        <span className="font-medium">
-                          {item.fullMeal.fullNutritionData.macros.fiber}g
-                        </span>
-                      </div>
-                    )}
-                    {item.fullMeal.fullNutritionData.macros.sugar && (
-                      <div className="flex justify-between">
-                        <span className="text-slate-600">Sugar:</span>
-                        <span className="font-medium">
-                          {item.fullMeal.fullNutritionData.macros.sugar}g
-                        </span>
-                      </div>
-                    )}
-                  </div>
+                    <h4 className="text-sm font-medium text-slate-700 flex items-center gap-2 mb-2">
+                      <BarChart3 className="w-4 h-4" />
+                      Detailed Macros
+                    </h4>
+                    <div className="grid grid-cols-2 gap-2 text-xs">
+                      {item.fullMeal.fullNutritionData.macros.fiber && (
+                        <div className="flex justify-between">
+                          <span className="text-slate-600">Fiber:</span>
+                          <span className="font-medium">
+                            {item.fullMeal.fullNutritionData.macros.fiber}g
+                          </span>
+                        </div>
+                      )}
+                      {item.fullMeal.fullNutritionData.macros.sugar && (
+                        <div className="flex justify-between">
+                          <span className="text-slate-600">Sugar:</span>
+                          <span className="font-medium">
+                            {item.fullMeal.fullNutritionData.macros.sugar}g
+                          </span>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </>
               )}
 
               {/* Recommendations */}
-              {item.fullMeal?.fullNutritionData?.recommendations && 
-               item.fullMeal.fullNutritionData.recommendations.length > 0 && (
-                <>
-                  <Separator />
-                  <div className="space-y-2">
-                  <h4 className="text-sm font-medium text-slate-700 flex items-center gap-2">
-                    <Lightbulb className="w-4 h-4" />
-                    AI Recommendations
-                  </h4>
-                  <div className="space-y-1">
-                    {item.fullMeal.fullNutritionData.recommendations.map(
-                      (rec, index) => {
-                        // Handle both string format and object format
-                        const recText = typeof rec === 'string' ? rec : (rec as any).text || rec
-                        const recType = typeof rec === 'object' && (rec as any).type ? (rec as any).type : 'positive'
-                        
-                        return (
-                          <div
-                            key={index}
-                            className={`p-2 rounded-md border text-xs ${
-                              recType === "positive"
-                                ? "bg-green-50 border-green-200 text-green-800"
-                                : "bg-amber-50 border-amber-200 text-amber-800"
-                            }`}
-                          >
-                            <div className="flex items-start gap-1">
-                              {recType === "positive" ? (
-                                <CheckCircle className="w-3 h-3 mt-0.5 flex-shrink-0" />
-                              ) : (
-                                <AlertTriangle className="w-3 h-3 mt-0.5 flex-shrink-0" />
-                              )}
-                              <p className="leading-relaxed">{recText}</p>
-                            </div>
-                          </div>
-                        )
-                      }
-                    )}
-                  </div>
-                  </div>
-                </>
-              )}
+              {item.fullMeal?.fullNutritionData?.recommendations &&
+                item.fullMeal.fullNutritionData.recommendations.length > 0 && (
+                  <>
+                    <Separator />
+                    <div className="space-y-2">
+                      <h4 className="text-sm font-medium text-slate-700 flex items-center gap-2">
+                        <Lightbulb className="w-4 h-4" />
+                        AI Recommendations
+                      </h4>
+                      <div className="space-y-1">
+                        {item.fullMeal.fullNutritionData.recommendations.map(
+                          (rec, index) => {
+                            // Handle both string format and object format
+                            const recText =
+                              typeof rec === 'string'
+                                ? rec
+                                : (rec as any).text || rec
+                            const recType =
+                              typeof rec === 'object' && (rec as any).type
+                                ? (rec as any).type
+                                : 'positive'
+
+                            return (
+                              <div
+                                key={index}
+                                className={`p-2 rounded-md border text-xs ${
+                                  recType === 'positive'
+                                    ? 'bg-green-50 border-green-200 text-green-800'
+                                    : 'bg-amber-50 border-amber-200 text-amber-800'
+                                }`}
+                              >
+                                <div className="flex items-start gap-1">
+                                  {recType === 'positive' ? (
+                                    <CheckCircle className="w-3 h-3 mt-0.5 flex-shrink-0" />
+                                  ) : (
+                                    <AlertTriangle className="w-3 h-3 mt-0.5 flex-shrink-0" />
+                                  )}
+                                  <p className="leading-relaxed">{recText}</p>
+                                </div>
+                              </div>
+                            )
+                          }
+                        )}
+                      </div>
+                    </div>
+                  </>
+                )}
 
               {/* Sources */}
               {item.fullMeal?.fullNutritionData?.sources &&
-               item.fullMeal.fullNutritionData.sources.length > 0 && (
-                <>
-                  <Separator />
-                  <div className="space-y-2">
-                  <h4 className="text-sm font-medium text-slate-700 flex items-center gap-2">
-                    <ExternalLink className="w-4 h-4" />
-                    Data Sources
-                  </h4>
-                  <div className="grid grid-cols-1 gap-1">
-                    {item.fullMeal.fullNutritionData.sources.map((source, index) => (
-                      <Button
-                        key={index}
-                        variant="outline"
-                        size="sm"
-                        className="h-auto py-1 px-2 text-xs bg-white hover:bg-slate-50 border-slate-200 flex items-center justify-start w-full"
-                        onClick={() => source.url && window.open(source.url, '_blank')}
-                      >
-                        <span className="mr-1 flex-shrink-0">🔗</span>
-                        <span className="truncate">{source.title || source.domain}</span>
-                        <ExternalLink className="w-2 h-2 ml-1 flex-shrink-0" />
-                      </Button>
-                    ))}
-                  </div>
-                  </div>
-                </>
-              )}
+                item.fullMeal.fullNutritionData.sources.length > 0 && (
+                  <>
+                    <Separator />
+                    <div className="space-y-2">
+                      <h4 className="text-sm font-medium text-slate-700 flex items-center gap-2">
+                        <ExternalLink className="w-4 h-4" />
+                        Data Sources
+                      </h4>
+                      <div className="grid grid-cols-1 gap-1">
+                        {item.fullMeal.fullNutritionData.sources.map(
+                          (source, index) => (
+                            <Button
+                              key={index}
+                              variant="outline"
+                              size="sm"
+                              className="h-auto py-1 px-2 text-xs bg-white hover:bg-slate-50 border-slate-200 flex items-center justify-start w-full"
+                              onClick={() =>
+                                source.url && window.open(source.url, '_blank')
+                              }
+                            >
+                              <img 
+                                src={`https://www.google.com/s2/favicons?domain=${source.domain || new URL(source.url).hostname}&sz=16`}
+                                alt={`${source.domain || new URL(source.url).hostname} favicon`}
+                                className="w-4 h-4 mr-1 flex-shrink-0"
+                                onError={(e) => {
+                                  e.currentTarget.style.display = 'none';
+                                  const fallback = e.currentTarget.nextElementSibling as HTMLElement;
+                                  if (fallback) fallback.style.display = 'inline';
+                                }}
+                              />
+                              <span className="mr-1 flex-shrink-0 hidden">🔗</span>
+                              <span className="truncate">
+                                {source.title || source.domain}
+                              </span>
+                              <ExternalLink className="w-2 h-2 ml-1 flex-shrink-0" />
+                            </Button>
+                          )
+                        )}
+                      </div>
+                    </div>
+                  </>
+                )}
             </div>
           )}
         </div>

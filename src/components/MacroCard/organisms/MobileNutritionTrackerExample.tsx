@@ -26,7 +26,10 @@ export default function MobileNutritionTrackerExample() {
       
       // Transform meals to mobile format (same logic as main app)
       const mobileFormatMeals = meals.reduce((acc: any[], meal) => {
-        const mealType = getMealType(meal.timestamp)
+        // Use meal's actual type if available, otherwise derive from timestamp
+        const mealType = meal.fullNutritionData?.mealType 
+          ? meal.fullNutritionData.mealType.charAt(0).toUpperCase() + meal.fullNutritionData.mealType.slice(1)
+          : getMealType(meal.timestamp)
         const existingMeal = acc.find(m => m.type === mealType)
         
         const mealItem = {

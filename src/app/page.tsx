@@ -4,22 +4,24 @@ import { SignedIn } from '@clerk/nextjs'
 import { Button } from '@/components/ui/button'
 import { useChat } from '@ai-sdk/react'
 import { useState, useRef, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
 import NutritionDisplay, {
   type NutritionData,
 } from '@/components/NutritionDisplay'
 import ImageUpload, { type ImageUploadRef } from '@/components/ImageUpload'
 import MacroCard, { MobileNutritionTracker } from '@/components/MacroCard'
 import MealChatInput from '@/components/MealChatInput'
-import { useSpeechRecognition } from '@/hooks/useSpeechRecognition'
 import { useImageUpload } from '@/hooks/useImageUpload'
-import { saveMeal, getTodaysMeals, getTodaysNutritionSummary, deleteMeal, type RecordedMeal } from '@/lib/mealStorage'
+import {
+  saveMeal,
+  getTodaysMeals,
+  getTodaysNutritionSummary,
+  deleteMeal,
+  type RecordedMeal,
+} from '@/lib/mealStorage'
 import { DEFAULT_DAILY_GOALS } from '@/components/MacroCard/constants'
 
 export default function Home() {
-  const router = useRouter()
   const [nutritionData, setNutritionData] = useState<NutritionData | null>(null)
-  const [isAnalyzingStructured, setIsAnalyzingStructured] = useState(false)
   const [showStructuredView, setShowStructuredView] = useState(false)
   const [isSavingMeal, setIsSavingMeal] = useState(false)
   const [showSaveSuccess, setShowSaveSuccess] = useState(false)
@@ -29,11 +31,11 @@ export default function Home() {
     caloriesGoal: DEFAULT_DAILY_GOALS.calories,
     caloriesRemaining: DEFAULT_DAILY_GOALS.calories,
     macros: {
-      protein: { current: 0, goal: DEFAULT_DAILY_GOALS.protein, unit: "g" },
-      carbs: { current: 0, goal: DEFAULT_DAILY_GOALS.carbs, unit: "g" },
-      fat: { current: 0, goal: DEFAULT_DAILY_GOALS.fat, unit: "g" },
+      protein: { current: 0, goal: DEFAULT_DAILY_GOALS.protein, unit: 'g' },
+      carbs: { current: 0, goal: DEFAULT_DAILY_GOALS.carbs, unit: 'g' },
+      fat: { current: 0, goal: DEFAULT_DAILY_GOALS.fat, unit: 'g' },
     },
-    meals: [] as any[]
+    meals: [] as any[],
   })
   const imageUploadRef = useRef<ImageUploadRef>(null)
 
@@ -42,26 +44,38 @@ export default function Home() {
     const checkMobile = () => {
       setIsMobile(window.innerWidth < 768)
     }
-    
+
     checkMobile()
     window.addEventListener('resize', checkMobile)
-    
+
     // Load today's meals for mobile view
     const loadMealsData = () => {
       const meals = getTodaysMeals()
       const summary = getTodaysNutritionSummary(meals)
-      
+
       // Transform meals to mobile format
       const mobileFormatMeals = meals.reduce((acc: any[], meal) => {
-        const mealType = getMealType(meal.timestamp)
-        const existingMeal = acc.find(m => m.type === mealType)
-        
+        // Use meal's actual type if available, otherwise derive from timestamp
+        const mealType = meal.fullNutritionData?.mealType
+          ? meal.fullNutritionData.mealType.charAt(0).toUpperCase() +
+            meal.fullNutritionData.mealType.slice(1)
+          : getMealType(meal.timestamp)
+
+        console.log('Meal grouping debug:', {
+          mealName: meal.name,
+          timestamp: meal.timestamp,
+          mealType,
+          fullNutritionDataMealType: meal.fullNutritionData?.mealType,
+        })
+
+        const existingMeal = acc.find((m) => m.type === mealType)
+
         const mealItem = {
           id: meal.id,
           name: meal.name,
-          time: new Date(meal.timestamp).toLocaleTimeString('en-US', { 
-            hour: '2-digit', 
-            minute: '2-digit' 
+          time: new Date(meal.timestamp).toLocaleTimeString('en-US', {
+            hour: '2-digit',
+            minute: '2-digit',
           }),
           calories: meal.nutritionData?.calories || 0,
           protein: meal.nutritionData?.protein || 0,
@@ -69,7 +83,7 @@ export default function Home() {
           fat: meal.nutritionData?.fat || 0,
           fullMeal: meal, // Preserve full meal data for expand functionality
         }
-        
+
         if (existingMeal) {
           existingMeal.items.push(mealItem)
           existingMeal.count = existingMeal.items.length
@@ -79,41 +93,43 @@ export default function Home() {
             type: mealType,
             emoji: getMealEmoji(mealType),
             count: 1,
-            items: [mealItem]
+            items: [mealItem],
           })
         }
-        
+
         return acc
       }, [])
-      
+
+      console.log('Final grouped meals:', mobileFormatMeals)
+
       // Use default nutrition goals (will be user-configurable in the future)
       const caloriesGoal = DEFAULT_DAILY_GOALS.calories
       const proteinGoal = DEFAULT_DAILY_GOALS.protein
       const carbsGoal = DEFAULT_DAILY_GOALS.carbs
       const fatGoal = DEFAULT_DAILY_GOALS.fat
-      
+
       setMobileNutritionData({
         caloriesConsumed: summary.calories,
         caloriesGoal,
         caloriesRemaining: Math.max(0, caloriesGoal - summary.calories),
         macros: {
-          protein: { current: summary.protein, goal: proteinGoal, unit: "g" },
-          carbs: { current: summary.carbs, goal: carbsGoal, unit: "g" },
-          fat: { current: summary.fat, goal: fatGoal, unit: "g" },
+          protein: { current: summary.protein, goal: proteinGoal, unit: 'g' },
+          carbs: { current: summary.carbs, goal: carbsGoal, unit: 'g' },
+          fat: { current: summary.fat, goal: fatGoal, unit: 'g' },
         },
-        meals: mobileFormatMeals
+        meals: mobileFormatMeals,
       })
     }
-    
+
     loadMealsData()
-    
+
     // Listen for meal updates
     const handleMealSaved = () => {
       loadMealsData()
     }
-    
+
     window.addEventListener('mealSaved', handleMealSaved)
-    
+
     return () => {
       window.removeEventListener('resize', checkMobile)
       window.removeEventListener('mealSaved', handleMealSaved)
@@ -130,11 +146,16 @@ export default function Home() {
 
   const getMealEmoji = (mealType: string) => {
     switch (mealType) {
-      case 'Breakfast': return '🍳'
-      case 'Lunch': return '🍔'
-      case 'Dinner': return '🍽️'
-      case 'Snack': return '🥨'
-      default: return '🍽️'
+      case 'Breakfast':
+        return '🍳'
+      case 'Lunch':
+        return '🍔'
+      case 'Dinner':
+        return '🍽️'
+      case 'Snack':
+        return '🥨'
+      default:
+        return '🍽️'
     }
   }
 
@@ -142,102 +163,8 @@ export default function Home() {
     api: '/api/upload',
   })
 
-  const {
-    isRecording,
-    transcript,
-    isListening,
-    speechSupported,
-    toggleRecording,
-    clearTranscript,
-  } = useSpeechRecognition()
-
   const { selectedImage, previewUrl, handleImageChange, convertToBase64 } =
     useImageUpload()
-
-  const handleSendForAnalysis = async () => {
-    if (!selectedImage) return
-
-    try {
-      const base64Image = await convertToBase64(selectedImage)
-
-      let content =
-        'Analyze this meal image and provide detailed nutritional information including estimated calories, protein, carbs, and fat.'
-
-      if (transcript.trim()) {
-        content += `\n\nAdditional context from user: "${transcript.trim()}"`
-      }
-
-      await append({
-        role: 'user',
-        content,
-        experimental_attachments: [
-          {
-            name: selectedImage.name,
-            contentType: selectedImage.type,
-            url: base64Image,
-          },
-        ],
-      })
-
-      clearTranscript()
-    } catch (error) {
-      console.error('Error processing image:', error)
-    }
-  }
-
-  const handleGetStructuredAnalysis = async () => {
-    if (!selectedImage) return
-
-    setIsAnalyzingStructured(true)
-    try {
-      const base64Image = await convertToBase64(selectedImage)
-
-      let content =
-        'Analyze this meal image and provide detailed nutritional information including estimated calories, protein, carbs, and fat.'
-
-      if (transcript.trim()) {
-        content += `\n\nAdditional context from user: "${transcript.trim()}"`
-      }
-
-      const response = await fetch('/api/upload', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          structured: true,
-          messages: [
-            {
-              role: 'user',
-              content,
-              experimental_attachments: [
-                {
-                  name: selectedImage.name,
-                  contentType: selectedImage.type,
-                  url: base64Image,
-                },
-              ],
-            },
-          ],
-        }),
-      })
-
-      if (!response.ok) {
-        throw new Error('Failed to get structured analysis')
-      }
-
-      const data = await response.json()
-      console.log('Structured analysis response:', data)
-      setNutritionData(data)
-      setShowStructuredView(true)
-
-      clearTranscript()
-    } catch (error) {
-      console.error('Error getting structured analysis:', error)
-    } finally {
-      setIsAnalyzingStructured(false)
-    }
-  }
 
   const handleSaveNutritionEntry = () => {
     // TODO: Implement saving to database/local storage
@@ -284,7 +211,6 @@ export default function Home() {
       console.error('Error processing meal chat:', error)
     }
   }
-
 
   const generateAndSaveNutritionData = async (
     message: string,
@@ -383,61 +309,84 @@ export default function Home() {
                   // Re-run the same load logic
                   const meals = getTodaysMeals()
                   const summary = getTodaysNutritionSummary(meals)
-                  
-                  const mobileFormatMeals = meals.reduce((acc: any[], meal: any) => {
-                    const mealType = getMealType(meal.timestamp)
-                    const existingMeal = acc.find(m => m.type === mealType)
-                    
-                    const mealItem = {
-                      id: meal.id,
-                      name: meal.name,
-                      time: new Date(meal.timestamp).toLocaleTimeString('en-US', { 
-                        hour: '2-digit', 
-                        minute: '2-digit' 
-                      }),
-                      calories: meal.nutritionData?.calories || 0,
-                      protein: meal.nutritionData?.protein || 0,
-                      carbs: meal.nutritionData?.carbs || 0,
-                      fat: meal.nutritionData?.fat || 0,
-                      fullMeal: meal,
-                    }
-                    
-                    if (existingMeal) {
-                      existingMeal.items.push(mealItem)
-                      existingMeal.count = existingMeal.items.length
-                    } else {
-                      acc.push({
-                        id: acc.length + 1,
-                        type: mealType,
-                        emoji: getMealEmoji(mealType),
-                        count: 1,
-                        items: [mealItem]
-                      })
-                    }
-                    
-                    return acc
-                  }, [])
-                  
+
+                  const mobileFormatMeals = meals.reduce(
+                    (acc: any[], meal: any) => {
+                      // Use meal's actual type if available, otherwise derive from timestamp
+                      const mealType = meal.fullNutritionData?.mealType
+                        ? meal.fullNutritionData.mealType
+                            .charAt(0)
+                            .toUpperCase() +
+                          meal.fullNutritionData.mealType.slice(1)
+                        : getMealType(meal.timestamp)
+                      const existingMeal = acc.find((m) => m.type === mealType)
+
+                      const mealItem = {
+                        id: meal.id,
+                        name: meal.name,
+                        time: new Date(meal.timestamp).toLocaleTimeString(
+                          'en-US',
+                          {
+                            hour: '2-digit',
+                            minute: '2-digit',
+                          }
+                        ),
+                        calories: meal.nutritionData?.calories || 0,
+                        protein: meal.nutritionData?.protein || 0,
+                        carbs: meal.nutritionData?.carbs || 0,
+                        fat: meal.nutritionData?.fat || 0,
+                        fullMeal: meal,
+                      }
+
+                      if (existingMeal) {
+                        existingMeal.items.push(mealItem)
+                        existingMeal.count = existingMeal.items.length
+                      } else {
+                        acc.push({
+                          id: acc.length + 1,
+                          type: mealType,
+                          emoji: getMealEmoji(mealType),
+                          count: 1,
+                          items: [mealItem],
+                        })
+                      }
+
+                      return acc
+                    },
+                    []
+                  )
+
                   const caloriesGoal = DEFAULT_DAILY_GOALS.calories
                   const proteinGoal = DEFAULT_DAILY_GOALS.protein
                   const carbsGoal = DEFAULT_DAILY_GOALS.carbs
                   const fatGoal = DEFAULT_DAILY_GOALS.fat
-                  
+
                   setMobileNutritionData({
                     caloriesConsumed: summary.calories,
                     caloriesGoal,
-                    caloriesRemaining: Math.max(0, caloriesGoal - summary.calories),
+                    caloriesRemaining: Math.max(
+                      0,
+                      caloriesGoal - summary.calories
+                    ),
                     macros: {
-                      protein: { current: summary.protein, goal: proteinGoal, unit: "g" },
-                      carbs: { current: summary.carbs, goal: carbsGoal, unit: "g" },
-                      fat: { current: summary.fat, goal: fatGoal, unit: "g" },
+                      protein: {
+                        current: summary.protein,
+                        goal: proteinGoal,
+                        unit: 'g',
+                      },
+                      carbs: {
+                        current: summary.carbs,
+                        goal: carbsGoal,
+                        unit: 'g',
+                      },
+                      fat: { current: summary.fat, goal: fatGoal, unit: 'g' },
                     },
-                    meals: mobileFormatMeals
+                    meals: mobileFormatMeals,
                   })
                 }
               }}
             />
-            
+
             <MealChatInput
               onSendMessage={handleMealChat}
               disabled={isLoading}
