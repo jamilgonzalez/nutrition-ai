@@ -67,7 +67,6 @@ export function EnhancedOnboardingForm({
   const [hasProvidedInput, setHasProvidedInput] = useState(false)
   const [isInitialMount, setIsInitialMount] = useState(true)
 
-  const userName = profile.name || 'there'
   const isDataComplete =
     profile.age !== null &&
     profile.sex !== null &&
