@@ -26,7 +26,7 @@ export function FormSelect({
   options,
   placeholder = 'Select an option',
   required = false,
-  className = ''
+  className = '',
 }: FormSelectProps) {
   return (
     <div className={`space-y-2 ${className}`}>
@@ -34,7 +34,7 @@ export function FormSelect({
         {label}
         {required && <span className="text-red-500 ml-1">*</span>}
       </Label>
-      <Select onValueChange={onChange} value={value}>
+      <Select onValueChange={onChange}>
         <SelectTrigger id={id} className="w-full">
           <SelectValue placeholder={placeholder} />
         </SelectTrigger>

@@ -17,24 +17,27 @@ export function PlanAdjustmentForm({
   onSubmit,
   onCancel,
   loading = false,
-  className = ''
+  className = '',
 }: PlanAdjustmentFormProps) {
   const [adjustments, setAdjustments] = useState({
     calories: plan.calories,
     protein: plan.macros.protein,
     carbs: plan.macros.carbs,
-    fat: plan.macros.fat
+    fat: plan.macros.fat,
   })
-  
+
   const [adjustmentReason, setAdjustmentReason] = useState('')
 
-  const handleMacroChange = (field: 'calories' | 'protein' | 'carbs' | 'fat', value: number) => {
-    setAdjustments(prev => ({ ...prev, [field]: value }))
+  const handleMacroChange = (
+    field: 'calories' | 'protein' | 'carbs' | 'fat',
+    value: number
+  ) => {
+    setAdjustments((prev) => ({ ...prev, [field]: value }))
   }
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    
+
     if (!adjustmentReason.trim()) {
       alert('Please provide a reason for the adjustment')
       return
@@ -42,16 +45,22 @@ export function PlanAdjustmentForm({
 
     const adjustmentRequest: PlanAdjustmentRequest = {
       adjustmentReason,
-      ...(adjustments.calories !== plan.calories && { calories: adjustments.calories }),
-      ...(adjustments.protein !== plan.macros.protein && { protein: adjustments.protein }),
-      ...(adjustments.carbs !== plan.macros.carbs && { carbs: adjustments.carbs }),
-      ...(adjustments.fat !== plan.macros.fat && { fat: adjustments.fat })
+      ...(adjustments.calories !== plan.calories && {
+        calories: adjustments.calories,
+      }),
+      ...(adjustments.protein !== plan.macros.protein && {
+        protein: adjustments.protein,
+      }),
+      ...(adjustments.carbs !== plan.macros.carbs && {
+        carbs: adjustments.carbs,
+      }),
+      ...(adjustments.fat !== plan.macros.fat && { fat: adjustments.fat }),
     }
 
     onSubmit(adjustmentRequest)
   }
 
-  const hasChanges = 
+  const hasChanges =
     adjustments.calories !== plan.calories ||
     adjustments.protein !== plan.macros.protein ||
     adjustments.carbs !== plan.macros.carbs ||
@@ -86,7 +95,6 @@ export function PlanAdjustmentForm({
 
       <div className="flex gap-4 justify-center pt-6">
         <SubmitButton
-          type="button"
           onClick={onCancel}
           variant="outline"
           className="px-6 py-3 border-gray-300 text-gray-700 hover:bg-gray-50"

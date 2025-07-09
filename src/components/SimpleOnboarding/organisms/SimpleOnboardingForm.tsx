@@ -17,7 +17,7 @@ export function SimpleOnboardingForm({
   loading = false,
   className = ''
 }: SimpleOnboardingFormProps) {
-  const [formData, setFormData] = useState<Partial<SimpleOnboardingData>>({
+  const [formData, setFormData] = useState<SimpleOnboardingData>({
     age: 0,
     gender: 'male',
     height: 0,
@@ -41,7 +41,7 @@ export function SimpleOnboardingForm({
       return
     }
 
-    onSubmit(formData as SimpleOnboardingData)
+    onSubmit(formData)
   }
 
   const isFormValid = 

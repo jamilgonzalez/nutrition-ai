@@ -1,13 +1,19 @@
 // Database operations stub for user profiles and nutrition data
 // In a real implementation, this would connect to your database (e.g., Supabase, PostgreSQL, MongoDB)
 
-interface UserProfile {
+export interface UserProfile {
   name: string
   age: number | null
   sex: 'male' | 'female' | 'other' | null
   height: number | null
   weight: number | null
-  activityLevel: 'sedentary' | 'light' | 'moderate' | 'active' | 'very_active' | null
+  activityLevel:
+    | 'sedentary'
+    | 'lightly_active'
+    | 'moderately_active'
+    | 'very_active'
+    | 'extremely_active'
+    | null
   goals: string[]
   healthConditions: string[]
   dietaryRestrictions: string[]
@@ -42,18 +48,21 @@ interface NutritionEntry {
 
 export class DatabaseStub {
   // User Profile operations
-  static async saveUserProfile(userId: string, profile: UserProfile): Promise<void> {
+  static async saveUserProfile(
+    userId: string,
+    profile: UserProfile
+  ): Promise<void> {
     try {
       // Stub: Save to localStorage for now
       const data = {
         ...profile,
         userId,
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       }
-      
+
       localStorage.setItem(`user_profile_${userId}`, JSON.stringify(data))
       console.log('User profile saved to localStorage:', data)
-      
+
       // TODO: Replace with actual database call
       // await supabase.from('user_profiles').upsert(data)
     } catch (error) {
@@ -67,11 +76,11 @@ export class DatabaseStub {
       // Stub: Get from localStorage for now
       const data = localStorage.getItem(`user_profile_${userId}`)
       if (!data) return null
-      
+
       const profile = JSON.parse(data)
       console.log('User profile loaded from localStorage:', profile)
       return profile
-      
+
       // TODO: Replace with actual database call
       // const { data, error } = await supabase
       //   .from('user_profiles')
@@ -86,29 +95,36 @@ export class DatabaseStub {
   }
 
   // Nutrition Entry operations
-  static async saveNutritionEntry(entry: Omit<NutritionEntry, 'id' | 'createdAt'>): Promise<string> {
+  static async saveNutritionEntry(
+    entry: Omit<NutritionEntry, 'id' | 'createdAt'>
+  ): Promise<string> {
     try {
-      const id = `entry_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+      const id = `entry_${Date.now()}_${Math.random()
+        .toString(36)
+        .substr(2, 9)}`
       const nutritionEntry: NutritionEntry = {
         ...entry,
         id,
-        createdAt: new Date().toISOString()
+        createdAt: new Date().toISOString(),
       }
-      
+
       // Stub: Save to localStorage for now
       const existingEntries = this.getNutritionEntries(entry.userId)
       const updatedEntries = [...existingEntries, nutritionEntry]
-      
-      localStorage.setItem(`nutrition_entries_${entry.userId}`, JSON.stringify(updatedEntries))
+
+      localStorage.setItem(
+        `nutrition_entries_${entry.userId}`,
+        JSON.stringify(updatedEntries)
+      )
       console.log('Nutrition entry saved to localStorage:', nutritionEntry)
-      
+
       // TODO: Replace with actual database call
       // const { data, error } = await supabase
       //   .from('nutrition_entries')
       //   .insert(nutritionEntry)
       //   .select()
       //   .single()
-      
+
       return id
     } catch (error) {
       console.error('Error saving nutrition entry:', error)
@@ -121,11 +137,11 @@ export class DatabaseStub {
       // Stub: Get from localStorage for now
       const data = localStorage.getItem(`nutrition_entries_${userId}`)
       if (!data) return []
-      
+
       const entries = JSON.parse(data)
       console.log('Nutrition entries loaded from localStorage:', entries)
       return entries
-      
+
       // TODO: Replace with actual database call
       // const { data, error } = await supabase
       //   .from('nutrition_entries')
@@ -139,14 +155,17 @@ export class DatabaseStub {
     }
   }
 
-  static async getNutritionEntriesByDate(userId: string, date: string): Promise<NutritionEntry[]> {
+  static async getNutritionEntriesByDate(
+    userId: string,
+    date: string
+  ): Promise<NutritionEntry[]> {
     try {
       const allEntries = this.getNutritionEntries(userId)
-      const dateEntries = allEntries.filter(entry => entry.date === date)
-      
+      const dateEntries = allEntries.filter((entry) => entry.date === date)
+
       console.log('Nutrition entries for date loaded:', dateEntries)
       return dateEntries
-      
+
       // TODO: Replace with actual database call
       // const { data, error } = await supabase
       //   .from('nutrition_entries')
@@ -165,24 +184,24 @@ export class DatabaseStub {
   static async getDailyNutritionSummary(userId: string, date: string) {
     try {
       const entries = await this.getNutritionEntriesByDate(userId, date)
-      
+
       const summary = entries.reduce(
         (acc, entry) => ({
           totalCalories: acc.totalCalories + entry.calories,
           totalProtein: acc.totalProtein + entry.protein,
           totalCarbs: acc.totalCarbs + entry.carbs,
           totalFat: acc.totalFat + entry.fat,
-          mealCount: acc.mealCount + 1
+          mealCount: acc.mealCount + 1,
         }),
         {
           totalCalories: 0,
           totalProtein: 0,
           totalCarbs: 0,
           totalFat: 0,
-          mealCount: 0
+          mealCount: 0,
         }
       )
-      
+
       console.log('Daily nutrition summary:', summary)
       return summary
     } catch (error) {
@@ -192,30 +211,44 @@ export class DatabaseStub {
   }
 
   // Weekly/Monthly analytics could be added here
-  static async getWeeklyNutritionSummary(userId: string, startDate: string, endDate: string) {
+  static async getWeeklyNutritionSummary(
+    userId: string,
+    startDate: string,
+    endDate: string
+  ) {
     // TODO: Implement weekly summary logic
-    console.log('Weekly nutrition summary requested for:', { userId, startDate, endDate })
+    console.log('Weekly nutrition summary requested for:', {
+      userId,
+      startDate,
+      endDate,
+    })
     return {
       averageCalories: 0,
       averageProtein: 0,
       averageCarbs: 0,
       averageFat: 0,
-      daysTracked: 0
+      daysTracked: 0,
     }
   }
 
   // Nutrition Targets operations
-  static async saveNutritionTargets(userId: string, targets: Omit<NutritionTargets, 'userId' | 'updatedAt'>): Promise<void> {
+  static async saveNutritionTargets(
+    userId: string,
+    targets: Omit<NutritionTargets, 'userId' | 'updatedAt'>
+  ): Promise<void> {
     try {
       const nutritionTargets: NutritionTargets = {
         ...targets,
         userId,
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       }
-      
-      localStorage.setItem(`nutrition_targets_${userId}`, JSON.stringify(nutritionTargets))
+
+      localStorage.setItem(
+        `nutrition_targets_${userId}`,
+        JSON.stringify(nutritionTargets)
+      )
       console.log('Nutrition targets saved to localStorage:', nutritionTargets)
-      
+
       // TODO: Replace with actual database call
       // await supabase.from('nutrition_targets').upsert(nutritionTargets)
     } catch (error) {
@@ -224,15 +257,17 @@ export class DatabaseStub {
     }
   }
 
-  static async getNutritionTargets(userId: string): Promise<NutritionTargets | null> {
+  static async getNutritionTargets(
+    userId: string
+  ): Promise<NutritionTargets | null> {
     try {
       const data = localStorage.getItem(`nutrition_targets_${userId}`)
       if (!data) return null
-      
+
       const targets = JSON.parse(data)
       console.log('Nutrition targets loaded from localStorage:', targets)
       return targets
-      
+
       // TODO: Replace with actual database call
       // const { data, error } = await supabase
       //   .from('nutrition_targets')
