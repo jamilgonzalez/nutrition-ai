@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { VoiceGreetingSection } from './organisms/VoiceGreetingSection'
 import { SimpleOnboardingForm } from './organisms/SimpleOnboardingForm'
 import { GeneratedPlanReview } from './organisms/GeneratedPlanReview'
@@ -154,7 +154,7 @@ export default function SimpleOnboardingAgent({
 
       case 'generating':
         return (
-          <div className="min-h-screen flex items-center justify-center bg-gray-50">
+          <div className="min-h-screen flex items-start justify-center bg-gray-50">
             <div className="text-center">
               <LoadingSpinner />
               <p className="mt-4 text-gray-600">
