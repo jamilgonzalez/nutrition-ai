@@ -3,24 +3,25 @@
 import { useState, useRef } from 'react'
 import { useSpeechRecognition } from '@/hooks/useSpeechRecognition'
 import { useImageUpload } from '@/hooks/useImageUpload'
+import { useMealAnalysis } from '@/hooks/useMealAnalysis'
+import { saveMeal } from '@/lib/mealStorage'
+import { ObjectURLManager } from '@/utils/memoryManagement'
+import { SUCCESS_NOTIFICATION_DURATION } from '@/constants/ui'
 import { FileInput } from './atoms/FileInput'
 import { ExpandedView } from './organisms/ExpandedView'
 import { InputWithButton } from './molecules/InputWithButton'
 import { InputToolbar } from './organisms/InputToolbar'
 
 interface MealChatInputProps {
-  onSendMessage: (message: string, image?: File) => void
-  isLoading?: boolean
-  showSaveSuccess?: boolean
+  onMealSaved: () => void
 }
 
 export default function MealChatInput({
-  onSendMessage,
-  isLoading,
-  showSaveSuccess,
+  onMealSaved,
 }: MealChatInputProps) {
   const [message, setMessage] = useState('')
   const [isExpanded, setIsExpanded] = useState(false)
+  const [showSaveSuccess, setShowSaveSuccess] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const imageInputRef = useRef<HTMLInputElement>(null)
 
@@ -33,6 +34,7 @@ export default function MealChatInput({
   } = useSpeechRecognition()
 
   const { selectedImage, previewUrl, handleImageChange } = useImageUpload()
+  const { analyzeMeal, isLoading } = useMealAnalysis()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -40,7 +42,48 @@ export default function MealChatInput({
     const messageText = message.trim() || transcript.trim()
     if (!messageText && !selectedImage) return
 
-    await onSendMessage(messageText, selectedImage || undefined)
+    let objectUrl: string | undefined
+
+    try {
+      const { data: nutritionData, error } = await analyzeMeal({
+        message: messageText,
+        image: selectedImage || undefined,
+      })
+
+      if (error) {
+        console.error('Error analyzing meal:', error)
+        return
+      }
+
+      if (!nutritionData) {
+        console.error('No nutrition data received')
+        return
+      }
+
+      if (selectedImage) {
+        objectUrl = ObjectURLManager.createObjectURL(selectedImage)
+      }
+
+      saveMeal({
+        name: nutritionData.mealName || 'Meal from Chat',
+        notes: messageText || 'Added via chat',
+        image: objectUrl,
+        nutritionData: {
+          calories: nutritionData.totalCalories || 0,
+          protein: nutritionData.macros?.protein || 0,
+          carbs: nutritionData.macros?.carbohydrates || 0,
+          fat: nutritionData.macros?.fat || 0,
+        },
+        fullNutritionData: nutritionData,
+      })
+
+      onMealSaved()
+
+      setShowSaveSuccess(true)
+      setTimeout(() => setShowSaveSuccess(false), SUCCESS_NOTIFICATION_DURATION)
+    } catch (error) {
+      console.error('Error generating and saving nutrition data:', error)
+    }
 
     setMessage('')
     clearTranscript()

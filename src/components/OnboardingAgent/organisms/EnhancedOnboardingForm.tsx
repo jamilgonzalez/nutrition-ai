@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback, memo } from 'react'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { Input } from '@/components/ui/input'
@@ -35,7 +35,7 @@ interface EnhancedOnboardingFormProps {
   onTranscriptProcessed?: (transcript: string) => void
 }
 
-export function EnhancedOnboardingForm({
+export const EnhancedOnboardingForm = memo(function EnhancedOnboardingForm({
   profile,
   isVoiceMode,
   showGreeting,
@@ -77,14 +77,14 @@ export function EnhancedOnboardingForm({
     profile.goals !== null &&
     profile.dietaryRestrictions.length > 0
 
-  const handleManualFieldChange = (
+  const handleManualFieldChange = useCallback((
     field: keyof UserProfile,
     value: string | number | null | string[]
   ) => {
     onProfileUpdate({ ...profile, [field]: value })
-  }
+  }, [profile, onProfileUpdate])
 
-  const getMissingInfoPrompt = () => {
+  const getMissingInfoPrompt = useCallback(() => {
     const missing = []
     if (profile.age === null) missing.push('your age')
     if (profile.sex === null) missing.push('your gender')
@@ -107,9 +107,9 @@ export function EnhancedOnboardingForm({
         ', '
       )}, and ${lastItem}. Could you share those details?`
     }
-  }
+  }, [profile])
 
-  const handleTextSubmit = () => {
+  const handleTextSubmit = useCallback(() => {
     if (textInput.trim() && textInput !== lastTranscriptProcessed) {
       // Enhanced NLP processing would happen here
       console.log('Processing text input:', textInput)
@@ -127,7 +127,11 @@ export function EnhancedOnboardingForm({
 
       setTextInput('')
     }
-  }
+  }, [textInput, lastTranscriptProcessed, getMissingInfoPrompt, isDataComplete])
+
+  const handleTextInputChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setTextInput(e.target.value)
+  }, [])
 
   const handleCompleteOnboarding = () => {
     if (isDataComplete) {
@@ -402,7 +406,7 @@ export function EnhancedOnboardingForm({
               id="freeform-input"
               placeholder="You can share multiple details at once, like: I'm 25 years old, male, 6 feet tall, 180 pounds, and I'm allergic to nuts"
               value={textInput}
-              onChange={(e) => setTextInput(e.target.value)}
+              onChange={handleTextInputChange}
               className="min-h-[100px]"
             />
             <Button onClick={handleTextSubmit} className="w-full">
@@ -714,4 +718,4 @@ export function EnhancedOnboardingForm({
   }
 
   return <DataCollectionStep />
-}
+})

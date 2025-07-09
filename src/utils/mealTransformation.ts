@@ -1,5 +1,6 @@
 import { RecordedMeal } from '@/lib/mealStorage'
 import { DEFAULT_DAILY_GOALS } from '@/components/MacroCard/constants'
+import { UserNutritionGoals } from '@/utils/userNutrition'
 
 // Type definitions for mobile meal data
 export interface MobileMealItem {
@@ -99,12 +100,14 @@ export const transformMealsToMobileFormat = (meals: RecordedMeal[]): MobileMealG
 
 export const createMobileNutritionData = (
   summary: { calories: number; protein: number; carbs: number; fat: number },
-  meals: MobileMealGroup[]
+  meals: MobileMealGroup[],
+  userGoals?: UserNutritionGoals
 ): MobileNutritionData => {
-  const caloriesGoal = DEFAULT_DAILY_GOALS.calories
-  const proteinGoal = DEFAULT_DAILY_GOALS.protein
-  const carbsGoal = DEFAULT_DAILY_GOALS.carbs
-  const fatGoal = DEFAULT_DAILY_GOALS.fat
+  // Use user's personalized goals if available, otherwise fall back to defaults
+  const caloriesGoal = userGoals?.calories ?? DEFAULT_DAILY_GOALS.calories
+  const proteinGoal = userGoals?.protein ?? DEFAULT_DAILY_GOALS.protein
+  const carbsGoal = userGoals?.carbs ?? DEFAULT_DAILY_GOALS.carbs
+  const fatGoal = userGoals?.fat ?? DEFAULT_DAILY_GOALS.fat
 
   return {
     caloriesConsumed: summary.calories,
