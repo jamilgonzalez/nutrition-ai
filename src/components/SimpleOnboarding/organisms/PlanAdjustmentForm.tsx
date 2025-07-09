@@ -67,48 +67,55 @@ export function PlanAdjustmentForm({
     adjustments.fat !== plan.macros.fat
 
   return (
-    <form onSubmit={handleSubmit} className={`space-y-8 ${className}`}>
-      <div className="text-center">
-        <h2 className="text-2xl font-bold text-gray-800 mb-2">
-          Adjust Your Plan
-        </h2>
-        <p className="text-gray-600">
-          Make changes to better fit your preferences
-        </p>
+    <>
+      {/* Main Form Content - with bottom padding for sticky buttons */}
+      <form onSubmit={handleSubmit} className={`space-y-8 pb-24 ${className}`}>
+        <div className="text-center">
+          <h2 className="text-2xl font-bold text-gray-800 mb-2">
+            Adjust Your Plan
+          </h2>
+          <p className="text-gray-600">
+            Make changes to better fit your preferences
+          </p>
+        </div>
+
+        <MacroAdjustmentGroup
+          plan={plan}
+          adjustments={adjustments}
+          onChange={handleMacroChange}
+        />
+
+        <FormTextarea
+          id="adjustmentReason"
+          label="Why are you making these adjustments?"
+          value={adjustmentReason}
+          onChange={(e) => setAdjustmentReason(e.target.value)}
+          placeholder="e.g., I prefer more protein for muscle building, I want fewer calories for faster weight loss..."
+          required
+          rows={3}
+        />
+      </form>
+
+      {/* Sticky Action Buttons */}
+      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 shadow-lg">
+        <div className="max-w-4xl mx-auto flex gap-4 justify-center">
+          <SubmitButton
+            onClick={onCancel}
+            variant="outline"
+            className="px-6 py-3 border-gray-300 text-gray-700 hover:bg-gray-50"
+          >
+            Cancel
+          </SubmitButton>
+          <SubmitButton
+            disabled={!hasChanges || !adjustmentReason.trim()}
+            loading={loading}
+            className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white"
+            onClick={() => handleSubmit({ preventDefault: () => {} } as React.FormEvent)}
+          >
+            {loading ? 'Updating Plan...' : 'Review Updated Plan'}
+          </SubmitButton>
+        </div>
       </div>
-
-      <MacroAdjustmentGroup
-        plan={plan}
-        adjustments={adjustments}
-        onChange={handleMacroChange}
-      />
-
-      <FormTextarea
-        id="adjustmentReason"
-        label="Why are you making these adjustments?"
-        value={adjustmentReason}
-        onChange={(e) => setAdjustmentReason(e.target.value)}
-        placeholder="e.g., I prefer more protein for muscle building, I want fewer calories for faster weight loss..."
-        required
-        rows={3}
-      />
-
-      <div className="flex gap-4 justify-center pt-6">
-        <SubmitButton
-          onClick={onCancel}
-          variant="outline"
-          className="px-6 py-3 border-gray-300 text-gray-700 hover:bg-gray-50"
-        >
-          Cancel
-        </SubmitButton>
-        <SubmitButton
-          disabled={!hasChanges || !adjustmentReason.trim()}
-          loading={loading}
-          className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white"
-        >
-          {loading ? 'Updating Plan...' : 'Review Updated Plan'}
-        </SubmitButton>
-      </div>
-    </form>
+    </>
   )
 }
