@@ -1,12 +1,8 @@
-'use client'
-
 import { useState, useEffect } from 'react'
 import { useUser } from '@clerk/nextjs'
-import { OnboardingAgent } from './OnboardingAgent'
 import DatabaseStub from '@/lib/database'
-import LoadingSpinner from './loadingSpinner'
 
-interface UserProfile {
+export interface UserProfile {
   name: string
   age: number | null
   sex: 'male' | 'female' | 'other' | null
@@ -14,17 +10,17 @@ interface UserProfile {
   weight: number | null
   activityLevel:
     | 'sedentary'
-    | 'light'
-    | 'moderate'
-    | 'active'
+    | 'lightly_active'
+    | 'moderately_active'
     | 'very_active'
+    | 'extremely_active'
     | null
   goals: string[]
   healthConditions: string[]
   dietaryRestrictions: string[]
 }
 
-export default function OnboardingFlow() {
+export function useOnboarding() {
   const { user, isLoaded } = useUser()
   const [hasCompletedOnboarding, setHasCompletedOnboarding] = useState(false)
   const [isCheckingOnboarding, setIsCheckingOnboarding] = useState(false)
@@ -34,11 +30,9 @@ export default function OnboardingFlow() {
 
     try {
       if (!user?.id) return
-      // Check if user has completed onboarding using database stub
       const profile = await DatabaseStub.getUserProfile(user.id)
       setHasCompletedOnboarding(!!profile)
     } catch (error) {
-      // TODO: handle UI in case of error
       console.error('Error checking onboarding status:', error)
       setHasCompletedOnboarding(false)
     } finally {
@@ -62,26 +56,11 @@ export default function OnboardingFlow() {
     }
   }
 
-  // show loading spinner if Clerk is loading user or if we're checking onboarding status
-  if (!isLoaded || isCheckingOnboarding) {
-    return <LoadingSpinner />
+  return {
+    user,
+    isLoaded,
+    hasCompletedOnboarding,
+    isCheckingOnboarding,
+    handleOnboardingComplete,
   }
-
-  // show onboarding agent if user is loaded and onboarding is not complete
-  if (user && !hasCompletedOnboarding) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-        <OnboardingAgent
-          userProfile={{
-            firstName: user.firstName || undefined,
-            lastName: user.lastName || undefined,
-          }}
-          onComplete={handleOnboardingComplete}
-          userId={user.id}
-        />
-      </div>
-    )
-  }
-
-  return <></>
 }
