@@ -4,24 +4,19 @@ import { useState, useRef } from 'react'
 import { useSpeechRecognition } from '@/hooks/useSpeechRecognition'
 import { useImageUpload } from '@/hooks/useImageUpload'
 import { FileInput } from './atoms/FileInput'
-import { LoadingIndicators } from './molecules/LoadingIndicators'
 import { ExpandedView } from './organisms/ExpandedView'
 import { InputWithButton } from './molecules/InputWithButton'
 import { InputToolbar } from './organisms/InputToolbar'
 
 interface MealChatInputProps {
   onSendMessage: (message: string, image?: File) => void
-  disabled?: boolean
   isLoading?: boolean
-  isSavingMeal?: boolean
   showSaveSuccess?: boolean
 }
 
 export default function MealChatInput({
   onSendMessage,
-  disabled,
   isLoading,
-  isSavingMeal,
   showSaveSuccess,
 }: MealChatInputProps) {
   const [message, setMessage] = useState('')
@@ -105,12 +100,6 @@ export default function MealChatInput({
       />
 
       <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 z-50 rounded-t-3xl">
-        <LoadingIndicators
-          isLoading={isLoading}
-          isSavingMeal={isSavingMeal}
-          showSaveSuccess={showSaveSuccess}
-        />
-
         {isExpanded && (
           <ExpandedView
             previewUrl={previewUrl}
@@ -125,7 +114,7 @@ export default function MealChatInput({
             value={displayText}
             onChange={(e) => setMessage(e.target.value)}
             placeholder="Describe your meal..."
-            disabled={disabled || isRecording}
+            disabled={isLoading || isRecording}
             onSubmit={handleSubmit}
             hasContent={!!hasContent}
           />
@@ -134,7 +123,7 @@ export default function MealChatInput({
             onCameraClick={handleCameraClick}
             onImageClick={handleImageClick}
             onVoiceToggle={toggleRecording}
-            disabled={disabled}
+            disabled={isLoading}
             speechSupported={speechSupported}
             isRecording={isRecording}
           />
