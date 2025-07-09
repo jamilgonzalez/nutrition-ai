@@ -35,6 +35,7 @@ export function InputWithButton({
           size="sm"
           disabled={disabled || !hasContent}
           className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-green-600 hover:bg-green-700 text-white p-2 h-8 w-8"
+          aria-label="Send message"
         >
           <Send className="w-4 h-4" />
         </Button>

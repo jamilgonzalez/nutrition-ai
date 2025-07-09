@@ -29,7 +29,11 @@ export async function POST(req: Request) {
       maxSteps: 2,
       tools: {
         webSearch: {
-          description: 'Search the web for information',
+          description: `Your task is to analyze the user's message and the image and extract the most relevant information in order to generate the most accurate nutritional information.
+          Search the web to find the most relevant information and increase the accuracy of the nutritional information.
+          Only use reputable sources that are authoritative and trustworthy and relevant to the data you extracted.
+          
+          ex. If you see a Starbucks logo on a coffee your search query should include starbucks in it.`,
           parameters: z.object({
             query: z.string(),
           }),
@@ -68,8 +72,7 @@ export async function POST(req: Request) {
         - domain: Just the domain name (e.g., "healthline.com")
         - snippet: A brief relevant excerpt if available
         - relevance: Rate as 'high', 'medium', or 'low' based on how directly it supports your analysis
-        
-        Prioritize sources from reputable nutrition and health websites like Healthline, Mayo Clinic, WebMD, USDA, or similar authoritative sources.`,
+        `,
       messages: [latestMessage],
       maxRetries: 3,
     })

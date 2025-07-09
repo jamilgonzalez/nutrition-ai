@@ -3,7 +3,7 @@
 import { useState, useRef } from 'react'
 import { useSpeechRecognition } from '@/hooks/useSpeechRecognition'
 import { useImageUpload } from '@/hooks/useImageUpload'
-import { useMealAnalysis } from '@/hooks/useMealAnalysis'
+import { useStreamingMealAnalysis } from '@/hooks/useStreamingMealAnalysis'
 import { saveMeal } from '@/lib/mealStorage'
 import { ObjectURLManager } from '@/utils/memoryManagement'
 import { SUCCESS_NOTIFICATION_DURATION } from '@/constants/ui'
@@ -11,6 +11,7 @@ import { FileInput } from './atoms/FileInput'
 import { ExpandedView } from './organisms/ExpandedView'
 import { InputWithButton } from './molecules/InputWithButton'
 import { InputToolbar } from './organisms/InputToolbar'
+import { StreamingLoadingView } from './organisms/StreamingLoadingView'
 
 interface MealChatInputProps {
   onMealSaved: () => void
@@ -34,7 +35,7 @@ export default function MealChatInput({
   } = useSpeechRecognition()
 
   const { selectedImage, previewUrl, handleImageChange } = useImageUpload()
-  const { analyzeMeal, isLoading } = useMealAnalysis()
+  const { analyzeMeal, isLoading, loadingState, currentMessage, cancelAnalysis } = useStreamingMealAnalysis()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -125,6 +126,10 @@ export default function MealChatInput({
     handleImageChange(null)
   }
 
+  const handleCancelAnalysis = () => {
+    cancelAnalysis()
+  }
+
   const displayText = message || transcript
   const hasContent = displayText.trim() || selectedImage
 
@@ -135,15 +140,17 @@ export default function MealChatInput({
         accept="image/*"
         capture="environment"
         onChange={handleFileChange}
+        data-testid="camera-file-input"
       />
       <FileInput
         ref={imageInputRef}
         accept="image/*"
         onChange={handleFileChange}
+        data-testid="image-file-input"
       />
 
       <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 z-50 rounded-t-3xl">
-        {isExpanded && (
+        {isExpanded && !isLoading && (
           <ExpandedView
             previewUrl={previewUrl}
             transcript={transcript}
@@ -152,25 +159,36 @@ export default function MealChatInput({
           />
         )}
 
-        <div className="space-y-3">
-          <InputWithButton
-            value={displayText}
-            onChange={(e) => setMessage(e.target.value)}
-            placeholder="Describe your meal..."
-            disabled={isLoading || isRecording}
-            onSubmit={handleSubmit}
-            hasContent={!!hasContent}
+        {isLoading ? (
+          <StreamingLoadingView
+            loadingState={loadingState}
+            currentMessage={currentMessage}
+            hasImage={!!selectedImage}
+            hasText={!!displayText.trim()}
+            onCancel={handleCancelAnalysis}
+            className="mb-4"
           />
+        ) : (
+          <div className="space-y-3">
+            <InputWithButton
+              value={displayText}
+              onChange={(e) => setMessage(e.target.value)}
+              placeholder="Describe your meal..."
+              disabled={isLoading || isRecording}
+              onSubmit={handleSubmit}
+              hasContent={!!hasContent}
+            />
 
-          <InputToolbar
-            onCameraClick={handleCameraClick}
-            onImageClick={handleImageClick}
-            onVoiceToggle={toggleRecording}
-            disabled={isLoading}
-            speechSupported={speechSupported}
-            isRecording={isRecording}
-          />
-        </div>
+            <InputToolbar
+              onCameraClick={handleCameraClick}
+              onImageClick={handleImageClick}
+              onVoiceToggle={toggleRecording}
+              disabled={isLoading}
+              speechSupported={speechSupported}
+              isRecording={isRecording}
+            />
+          </div>
+        )}
       </div>
 
       <div className="h-32" />

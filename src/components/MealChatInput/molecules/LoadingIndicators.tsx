@@ -15,7 +15,7 @@ export function LoadingIndicators({
     <div className="mb-3 flex items-center justify-center gap-2 text-sm">
       {isLoading && (
         <>
-          <Loader2 className="w-4 h-4 animate-spin" />
+          <Loader2 className="w-4 h-4 animate-spin" data-testid="loader-icon" aria-label="Loading" />
           <span className="text-gray-600">
             {isLoading ? (
               <>
@@ -30,7 +30,7 @@ export function LoadingIndicators({
       )}
       {showSaveSuccess && !isLoading && (
         <>
-          <CheckCircle className="w-4 h-4 text-green-600" />
+          <CheckCircle className="w-4 h-4 text-green-600" data-testid="success-icon" aria-label="Success" />
           <span className="text-green-600">Meal saved successfully!</span>
         </>
       )}
