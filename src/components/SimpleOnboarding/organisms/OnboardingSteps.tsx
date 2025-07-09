@@ -14,8 +14,8 @@ export function OnboardingSteps({
     { key: 'form', label: 'Your Info', number: 2 },
     { key: 'generating', label: 'Generating', number: 3 },
     { key: 'plan_review', label: 'Review Plan', number: 4 },
-    { key: 'adjusting', label: 'Adjusting', number: 4 }, // Same as review
-    { key: 'finalizing', label: 'Finalizing', number: 4 }, // Same as review
+    { key: 'adjusting', label: 'Adjust Plan', number: 4 },
+    { key: 'finalizing', label: 'Updating Plan', number: 4 },
     { key: 'complete', label: 'Complete', number: 5 }
   ]
 

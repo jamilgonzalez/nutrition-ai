@@ -10,10 +10,10 @@ export interface UserProfile {
   weight: number | null
   activityLevel:
     | 'sedentary'
-    | 'light'
-    | 'moderate'
-    | 'active'
+    | 'lightly_active'
+    | 'moderately_active'
     | 'very_active'
+    | 'extremely_active'
     | null
   goals: string[]
   healthConditions: string[]

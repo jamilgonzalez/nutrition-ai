@@ -14,9 +14,14 @@ import {
   OnboardingFlowState,
 } from '@/types/onboarding'
 import LoadingSpinner from '@/components/loadingSpinner'
+import { useEnhancedSpeechSynthesis } from '@/hooks/useEnhancedSpeechSynthesis'
+import { useUser } from '@clerk/nextjs'
 
 interface SimpleOnboardingAgentProps {
-  onComplete: (plan: GeneratedPlan | AdjustedPlan) => void
+  onComplete: (
+    plan: GeneratedPlan | AdjustedPlan,
+    onboardingData: SimpleOnboardingData
+  ) => void
   className?: string
 }
 
@@ -26,32 +31,34 @@ export default function SimpleOnboardingAgent({
 }: SimpleOnboardingAgentProps) {
   const [currentStep, setCurrentStep] =
     useState<OnboardingFlowState>('greeting')
-  const [isSpeaking, setIsSpeaking] = useState(false)
-  const [analyser, setAnalyser] = useState<AnalyserNode | null>(null)
   const [generatedPlan, setGeneratedPlan] = useState<GeneratedPlan | null>(null)
+  const [onboardingData, setOnboardingData] =
+    useState<SimpleOnboardingData | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const { user } = useUser()
 
-  // TODO: Replace with actual speech synthesis
-  const handleBeginGreeting = () => {
-    setIsSpeaking(true)
+  const { speak, isSpeaking, analyser } = useEnhancedSpeechSynthesis()
 
-    // TODO: Add your greeting text here and convert to speech
-    // Example: "Hello! I'm your nutrition AI assistant. I'm excited to help you create a personalized nutrition plan..."
-    const greetingText =
-      "Hello! I'm your nutrition AI assistant. I'm excited to help you create a personalized nutrition plan..."
-    const utterance = new SpeechSynthesisUtterance(greetingText)
-    window.speechSynthesis.speak(utterance)
+  const handleBeginGreeting = async () => {
+    const greetingText = `Hey ${
+      user?.firstName || ''
+    }! I'm excited to help you create a personalized nutrition plan that fits your lifestyle and goals. Let's get started!`
 
-    // Simulate speech duration
-    setTimeout(() => {
-      setIsSpeaking(false)
+    try {
+      await speak(greetingText)
       setCurrentStep('form')
-    }, 3000) // Adjust timing based on actual speech duration
+    } catch (error) {
+      console.error('Speech synthesis failed:', error)
+      setCurrentStep('form')
+    }
   }
 
   const handleFormSubmit = async (data: SimpleOnboardingData) => {
     setCurrentStep('generating')
     setError(null)
+
+    // Store the onboarding data
+    setOnboardingData(data)
 
     try {
       const response = await fetch('/api/onboarding/generate-plan', {
@@ -76,8 +83,8 @@ export default function SimpleOnboardingAgent({
   }
 
   const handleAcceptPlan = () => {
-    if (generatedPlan) {
-      onComplete(generatedPlan)
+    if (generatedPlan && onboardingData) {
+      onComplete(generatedPlan, onboardingData)
     }
   }
 
@@ -108,7 +115,10 @@ export default function SimpleOnboardingAgent({
       }
 
       const adjustedPlan: AdjustedPlan = await response.json()
-      onComplete(adjustedPlan)
+
+      // Update the generated plan with the adjusted plan and show review
+      setGeneratedPlan(adjustedPlan)
+      setCurrentStep('plan_review')
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred')
       setCurrentStep('adjusting')
@@ -188,7 +198,7 @@ export default function SimpleOnboardingAgent({
             <div className="text-center">
               <LoadingSpinner />
               <p className="mt-4 text-gray-600">
-                Finalizing your adjusted plan...
+                Updating your nutrition plan...
               </p>
             </div>
           </div>

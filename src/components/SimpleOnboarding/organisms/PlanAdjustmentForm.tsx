@@ -98,7 +98,7 @@ export function PlanAdjustmentForm({
           loading={loading}
           className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white"
         >
-          {loading ? 'Applying Changes...' : 'Apply Changes'}
+          {loading ? 'Updating Plan...' : 'Review Updated Plan'}
         </SubmitButton>
       </div>
     </form>

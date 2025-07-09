@@ -26,10 +26,10 @@ const adjustedPlanSchema = z.object({
     relevance: z.enum(['high', 'medium', 'low'])
   })).describe('Original sources'),
   adjustments: z.object({
-    calories: z.number().optional(),
-    protein: z.number().optional(),
-    carbs: z.number().optional(),
-    fat: z.number().optional(),
+    calories: z.number().nullable().optional(),
+    protein: z.number().nullable().optional(),
+    carbs: z.number().nullable().optional(),
+    fat: z.number().nullable().optional(),
     adjustmentReason: z.string(),
   }).describe('The adjustments made'),
   adjustmentExplanation: z.string().describe('Explanation of the adjustments and how they affect the plan'),
@@ -69,6 +69,8 @@ export async function POST(req: Request) {
       - If macros are adjusted but calories aren't, recalculate calories to match
       - Maintain nutritional adequacy (minimum protein, essential fats, etc.)
       - Flag any potentially unhealthy adjustments in your explanation
+
+      IMPORTANT: In the adjustments object, only include the actual numeric values that were changed. For fields that weren't adjusted, omit them entirely from the adjustments object (don't set them to null).
 
       Keep the original explanation, methodology, and sources unchanged. Only add the adjustment explanation.`,
       messages: [

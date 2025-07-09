@@ -4,7 +4,7 @@ import { useOnboarding } from '@/hooks/useOnboarding'
 import SimpleOnboardingAgent from './SimpleOnboarding/SimpleOnboardingAgent'
 import LoadingSpinner from './loadingSpinner'
 import { ErrorBoundary } from './ErrorBoundary'
-import { GeneratedPlan, AdjustedPlan } from '@/types/onboarding'
+import { GeneratedPlan, AdjustedPlan, SimpleOnboardingData } from '@/types/onboarding'
 import DatabaseStub from '@/lib/database'
 import { clearNutritionGoalsCache } from '@/utils/userNutrition'
 
@@ -28,7 +28,10 @@ export default function AppWrapper({ children }: AppWrapperProps) {
 
   // Show onboarding agent if user is loaded and onboarding is not complete
   if (user && !hasCompletedOnboarding) {
-    const handleSimpleOnboardingComplete = async (plan: GeneratedPlan | AdjustedPlan) => {
+    const handleSimpleOnboardingComplete = async (
+      plan: GeneratedPlan | AdjustedPlan, 
+      onboardingData: SimpleOnboardingData
+    ) => {
       try {
         // Save the nutrition targets from the plan
         await DatabaseStub.saveNutritionTargets(user.id, {
@@ -38,17 +41,18 @@ export default function AppWrapper({ children }: AppWrapperProps) {
           targetFat: plan.macros.fat,
         })
 
-        // Create a basic user profile to mark onboarding as complete
+        // Create user profile with the actual onboarding data
         const userProfile = {
           name: user.firstName || user.lastName || 'User',
-          age: null,
-          sex: null,
-          height: null,
-          weight: null,
-          activityLevel: null,
-          goals: [],
+          age: onboardingData.age,
+          sex: onboardingData.gender,
+          height: onboardingData.height,
+          weight: onboardingData.weight,
+          activityLevel: onboardingData.activityLevel,
+          goals: [onboardingData.goals], // Convert string to array
           healthConditions: [],
-          dietaryRestrictions: [],
+          dietaryRestrictions: onboardingData.dietaryRestrictions ? 
+            onboardingData.dietaryRestrictions.split(',').map(r => r.trim()).filter(r => r) : [],
           // Store nutrition targets in the profile as well for backup
           dailyCalories: plan.calories,
           targetProtein: plan.macros.protein,
