@@ -5,22 +5,19 @@ import MealChatInput from '@/components/MealChatInput'
 import { useNutritionData } from '@/hooks/useNutritionData'
 
 export default function Home() {
-  const { mobileNutritionData, loadNutritionData, handleDeleteMeal } = useNutritionData()
+  const { mobileNutritionData, loadNutritionData, handleDeleteMeal, isLoading, error } =
+    useNutritionData()
 
   return (
     <div className="flex flex-col min-h-screen">
       <MobileNutritionTracker
-        caloriesConsumed={mobileNutritionData.caloriesConsumed}
-        caloriesGoal={mobileNutritionData.caloriesGoal}
-        caloriesRemaining={mobileNutritionData.caloriesRemaining}
-        macros={mobileNutritionData.macros}
-        meals={mobileNutritionData.meals}
+        data={mobileNutritionData}
         onDeleteMeal={handleDeleteMeal}
+        isLoading={isLoading}
+        error={error}
       />
 
-      <MealChatInput
-        onMealSaved={loadNutritionData}
-      />
+      <MealChatInput onMealSaved={loadNutritionData} />
     </div>
   )
 }

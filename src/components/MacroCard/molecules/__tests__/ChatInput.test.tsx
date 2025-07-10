@@ -1,7 +1,7 @@
 import { render, screen, fireEvent } from '@testing-library/react'
-import { userEvent } from '@testing-library/user-event'
+import userEvent from '@testing-library/user-event'
 import ChatInput from '../ChatInput'
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 
 /**
  * ChatInput Component Tests

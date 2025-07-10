@@ -11,6 +11,7 @@ import { Geist, Geist_Mono } from 'next/font/google'
 import './styles/globals.css'
 import AppWrapper from '@/components/AppWrapper'
 import LandingPage from '@/components/LandingPage'
+import { Toaster } from '@/components/ui/sonner'
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -67,6 +68,17 @@ export default function RootLayout({
           <SignedIn>
             <AppWrapper>{children}</AppWrapper>
           </SignedIn>
+          <Toaster
+            position="top-center"
+            duration={3000}
+            richColors
+            toastOptions={{
+              style: {
+                background: '#333',
+                color: '#fff',
+              },
+            }}
+          />
         </body>
       </html>
     </ClerkProvider>

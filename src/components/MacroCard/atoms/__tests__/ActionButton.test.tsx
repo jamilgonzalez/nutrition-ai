@@ -1,7 +1,7 @@
 import { render, screen, fireEvent } from '@testing-library/react'
 import { Edit, Trash2 } from 'lucide-react'
 import ActionButton from '../ActionButton'
-import { describe, it, expect, vi } from 'vitest'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
 
 /**
  * ActionButton Component Tests

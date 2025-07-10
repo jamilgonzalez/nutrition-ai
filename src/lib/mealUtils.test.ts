@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
 import {
   getMealType,
   getMealEmoji,
@@ -84,7 +84,8 @@ describe('mealUtils', () => {
       const meal = {
         id: '1',
         name: 'Test Meal',
-        timestamp: testDate.toISOString(),
+        notes: 'Test meal notes',
+        timestamp: testDate,
         nutritionData: {
           calories: 400,
           protein: 30,
@@ -111,7 +112,8 @@ describe('mealUtils', () => {
       const meal = {
         id: '1',
         name: 'Test Meal',
-        timestamp: '2023-01-01T12:30:00Z',
+        notes: 'Test meal notes',
+        timestamp: new Date('2023-01-01T12:30:00Z'),
       }
 
       const result = transformMealToMobileFormat(meal)
@@ -128,25 +130,28 @@ describe('mealUtils', () => {
       const createLocalTime = (hour: number, minute: number = 0) => {
         const date = new Date()
         date.setHours(hour, minute, 0, 0)
-        return date.toISOString()
+        return date
       }
       
       const meals = [
         {
           id: '1',
           name: 'Breakfast Item',
+          notes: 'Breakfast notes',
           timestamp: createLocalTime(8, 0), // 8:00 AM local time
           nutritionData: { calories: 300, protein: 10, carbs: 40, fat: 8 },
         },
         {
           id: '2',
           name: 'Another Breakfast',
+          notes: 'Another breakfast notes',
           timestamp: createLocalTime(8, 30), // 8:30 AM local time
           nutritionData: { calories: 200, protein: 5, carbs: 30, fat: 5 },
         },
         {
           id: '3',
           name: 'Lunch Item',
+          notes: 'Lunch notes',
           timestamp: createLocalTime(12, 30), // 12:30 PM local time
           nutritionData: { calories: 400, protein: 30, carbs: 20, fat: 15 },
         },
@@ -168,7 +173,8 @@ describe('mealUtils', () => {
         {
           id: '1',
           name: 'Custom Meal',
-          timestamp: '2023-01-01T08:00:00Z',
+          notes: 'Custom meal notes',
+          timestamp: new Date('2023-01-01T08:00:00Z'),
           nutritionData: { calories: 300, protein: 10, carbs: 40, fat: 8 },
           fullNutritionData: {
             mealType: 'snack',

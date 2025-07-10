@@ -58,15 +58,17 @@ describe('ErrorBoundary', () => {
   })
 
   it('renders custom fallback when provided', () => {
-    const customFallback = <div>Custom error message</div>
+    const CustomFallback = ({ error }: { error: Error }) => (
+      <div>Custom error message: {error.message}</div>
+    )
 
     render(
-      <ErrorBoundary fallback={customFallback}>
+      <ErrorBoundary fallback={CustomFallback}>
         <AlwaysThrowError />
       </ErrorBoundary>
     )
 
-    expect(screen.getByText('Custom error message')).toBeInTheDocument()
+    expect(screen.getByText('Custom error message: Always throws')).toBeInTheDocument()
     expect(screen.queryByText('Something went wrong')).not.toBeInTheDocument()
   })
 
@@ -121,12 +123,14 @@ describe('withErrorBoundary', () => {
   })
 
   it('uses custom fallback when provided', () => {
-    const customFallback = <div>HOC custom error</div>
-    const WrappedComponent = withErrorBoundary(AlwaysThrowError, customFallback)
+    const CustomFallback = ({ error }: { error: Error }) => (
+      <div>HOC custom error: {error.message}</div>
+    )
+    const WrappedComponent = withErrorBoundary(AlwaysThrowError, CustomFallback)
 
     render(<WrappedComponent />)
 
-    expect(screen.getByText('HOC custom error')).toBeInTheDocument()
+    expect(screen.getByText('HOC custom error: Always throws')).toBeInTheDocument()
   })
 
   it('passes props to wrapped component', () => {

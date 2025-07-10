@@ -3,7 +3,7 @@
 import { useOnboarding } from '@/hooks/useOnboarding'
 import SimpleOnboardingAgent from './SimpleOnboarding/SimpleOnboardingAgent'
 import LoadingSpinner from './loadingSpinner'
-import { ErrorBoundary } from './ErrorBoundary'
+import { ErrorBoundary } from './ErrorBoundry/ErrorBoundary'
 import { GeneratedPlan, AdjustedPlan, SimpleOnboardingData } from '@/types/onboarding'
 import DatabaseStub from '@/lib/database'
 import { clearNutritionGoalsCache } from '@/utils/userNutrition'

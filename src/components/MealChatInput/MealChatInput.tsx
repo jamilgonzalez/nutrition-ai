@@ -1,12 +1,12 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState, useRef, useMemo } from 'react'
 import { useSpeechRecognition } from '@/hooks/useSpeechRecognition'
 import { useImageUpload } from '@/hooks/useImageUpload'
 import { useStreamingMealAnalysis } from '@/hooks/useStreamingMealAnalysis'
 import { saveMeal } from '@/lib/mealStorage'
 import { ObjectURLManager } from '@/utils/memoryManagement'
-import { SUCCESS_NOTIFICATION_DURATION } from '@/constants/ui'
+import { toast } from 'sonner'
 import { FileInput } from './atoms/FileInput'
 import { ExpandedView } from './organisms/ExpandedView'
 import { InputWithButton } from './molecules/InputWithButton'
@@ -17,12 +17,9 @@ interface MealChatInputProps {
   onMealSaved: () => void
 }
 
-export default function MealChatInput({
-  onMealSaved,
-}: MealChatInputProps) {
+export default function MealChatInput({ onMealSaved }: MealChatInputProps) {
   const [message, setMessage] = useState('')
   const [isExpanded, setIsExpanded] = useState(false)
-  const [showSaveSuccess, setShowSaveSuccess] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const imageInputRef = useRef<HTMLInputElement>(null)
 
@@ -35,14 +32,32 @@ export default function MealChatInput({
   } = useSpeechRecognition()
 
   const { selectedImage, previewUrl, handleImageChange } = useImageUpload()
-  const { analyzeMeal, isLoading, loadingState, currentMessage, cancelAnalysis } = useStreamingMealAnalysis()
+  const {
+    analyzeMeal,
+    isLoading,
+    loadingState,
+    currentMessage,
+    cancelAnalysis,
+  } = useStreamingMealAnalysis()
+
+  // Derive form state from basic state
+  const formState = useMemo(() => {
+    const displayText = message || transcript
+    const hasContent = displayText.trim() || selectedImage
+
+    return {
+      displayText,
+      hasContent,
+      canSubmit: hasContent && !isLoading && !isRecording,
+    }
+  }, [message, transcript, selectedImage, isLoading, isRecording])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    const messageText = message.trim() || transcript.trim()
-    if (!messageText && !selectedImage) return
+    if (!formState.canSubmit) return
 
+    const messageText = formState.displayText.trim()
     let objectUrl: string | undefined
 
     try {
@@ -79,19 +94,23 @@ export default function MealChatInput({
       })
 
       onMealSaved()
-
-      setShowSaveSuccess(true)
-      setTimeout(() => setShowSaveSuccess(false), SUCCESS_NOTIFICATION_DURATION)
+      toast('Meal saved successfully!', {
+        description: 'Your meal has been added to your nutrition tracker',
+      })
     } catch (error) {
       console.error('Error generating and saving nutrition data:', error)
-    }
+      toast('Failed to save meal', {
+        description: 'Please try again',
+      })
+    } finally {
+      // Reset form state
+      setMessage('')
+      clearTranscript()
+      setIsExpanded(false)
 
-    setMessage('')
-    clearTranscript()
-    setIsExpanded(false)
-
-    if (selectedImage) {
-      handleImageChange(null)
+      if (selectedImage) {
+        handleImageChange(null)
+      }
     }
   }
 
@@ -130,9 +149,6 @@ export default function MealChatInput({
     cancelAnalysis()
   }
 
-  const displayText = message || transcript
-  const hasContent = displayText.trim() || selectedImage
-
   return (
     <>
       <FileInput
@@ -164,19 +180,19 @@ export default function MealChatInput({
             loadingState={loadingState}
             currentMessage={currentMessage}
             hasImage={!!selectedImage}
-            hasText={!!displayText.trim()}
+            hasText={!!formState.displayText.trim()}
             onCancel={handleCancelAnalysis}
             className="mb-4"
           />
         ) : (
           <div className="space-y-3">
             <InputWithButton
-              value={displayText}
+              value={formState.displayText}
               onChange={(e) => setMessage(e.target.value)}
               placeholder="Describe your meal..."
               disabled={isLoading || isRecording}
               onSubmit={handleSubmit}
-              hasContent={!!hasContent}
+              hasContent={!!formState.hasContent}
             />
 
             <InputToolbar

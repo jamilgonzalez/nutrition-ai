@@ -1,60 +1,50 @@
 'use client'
 
-import { useState } from 'react'
+import { useMemo } from 'react'
 import { Badge } from '@/components/ui/badge'
-import MobileHeader from '../molecules/MobileHeader'
 import MobileNutritionOverview from '../molecules/MobileNutritionOverview'
 import MobileMacroGrid from '../molecules/MobileMacroGrid'
 import MobileMealItem from '../molecules/MobileMealItem'
-
-interface MealItem {
-  id: string
-  name: string
-  time: string
-  calories: number
-  protein: number
-  carbs: number
-  fat: number
-  fullMeal?: any
-}
-
-interface MealGroup {
-  id: number
-  type: string
-  emoji: string
-  count: number
-  items: MealItem[]
-}
+import { MobileNutritionData } from '@/utils/mealTransformation'
 
 interface MobileNutritionTrackerProps {
-  caloriesConsumed: number
-  caloriesGoal: number
-  caloriesRemaining: number
-  macros: {
-    protein: { current: number; goal: number; unit: string }
-    carbs: { current: number; goal: number; unit: string }
-    fat: { current: number; goal: number; unit: string }
-  }
-  meals: MealGroup[]
+  data: MobileNutritionData
   onDeleteMeal?: (mealId: string) => void
+  isLoading?: boolean
+  error?: string | null
 }
 
 export default function MobileNutritionTracker({
-  caloriesConsumed,
-  caloriesGoal,
-  caloriesRemaining,
-  macros,
-  meals,
+  data: { caloriesConsumed, caloriesGoal, caloriesRemaining, macros, meals },
   onDeleteMeal,
+  isLoading = false,
+  error = null,
 }: MobileNutritionTrackerProps) {
-  const totalMealItems = meals.reduce(
-    (sum, mealGroup) => sum + mealGroup.count,
-    0
-  )
+  // Derive total meal items count
+  const totalMealItems = useMemo(() => {
+    return meals.reduce((sum, mealGroup) => sum + mealGroup.count, 0)
+  }, [meals])
 
-  const handleMenuClick = () => {
-    // TODO: Implement menu functionality
-    console.log('Menu clicked')
+  // Derive empty state
+  const isEmpty = useMemo(() => {
+    return !isLoading && totalMealItems === 0
+  }, [isLoading, totalMealItems])
+
+  // Show error state
+  if (error) {
+    return (
+      <div className="flex-1 bg-gradient-to-b from-slate-50 to-white">
+        <div className="px-4 py-8 text-center">
+          <div className="text-red-500 mb-2" role="alert" aria-live="polite">
+            <span className="text-2xl">⚠️</span>
+          </div>
+          <h2 className="text-lg font-semibold text-slate-800 mb-2">
+            Failed to load nutrition data
+          </h2>
+          <p className="text-sm text-slate-600">{error}</p>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -81,27 +71,55 @@ export default function MobileNutritionTracker({
             </Badge>
           </div>
 
-          {meals.map((mealGroup) => (
+          {/* Loading state */}
+          {isLoading && (
+            <div className="space-y-2" role="status" aria-live="polite">
+              <div className="animate-pulse">
+                <div className="h-4 bg-slate-200 rounded mb-2"></div>
+                <div className="h-12 bg-slate-200 rounded"></div>
+              </div>
+              <span className="sr-only">Loading meals...</span>
+            </div>
+          )}
+
+          {/* Empty state */}
+          {isEmpty && (
+            <div className="py-8 text-center">
+              <div className="text-4xl mb-2">🍽️</div>
+              <h3 className="text-lg font-medium text-slate-700 mb-1">
+                No meals today
+              </h3>
+              <p className="text-sm text-slate-500">
+                Add your first meal using the chat below
+              </p>
+            </div>
+          )}
+
+          {/* Meals list */}
+          {!isLoading && !isEmpty && meals.map((mealGroup) => (
             <div key={mealGroup.id} className="space-y-2">
               <div className="flex items-center gap-2 px-1">
-                <span className="text-lg">{mealGroup.emoji}</span>
+                <span className="text-lg" role="img" aria-label={mealGroup.type}>
+                  {mealGroup.emoji}
+                </span>
                 <span className="font-medium text-slate-700 text-sm">
                   {mealGroup.type} ({mealGroup.count})
                 </span>
               </div>
 
-              {mealGroup.items.map((item, index) => (
+              {mealGroup.items.map((item) => (
                 <MobileMealItem
-                  key={index}
+                  key={item.id}
                   item={item}
-                  onDelete={onDeleteMeal ? () => onDeleteMeal(item.id) : undefined}
+                  onDelete={
+                    onDeleteMeal ? () => onDeleteMeal(item.id) : undefined
+                  }
                 />
               ))}
             </div>
           ))}
         </div>
       </div>
-
     </div>
   )
 }
