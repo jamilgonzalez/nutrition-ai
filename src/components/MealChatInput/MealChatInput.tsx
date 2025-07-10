@@ -130,6 +130,8 @@ export default function MealChatInput({ onMealSaved }: MealChatInputProps) {
         setIsExpanded(true)
       }
     }
+    // Reset the input value to allow selecting the same file again
+    e.target.value = ''
   }
 
   const handleClose = () => {

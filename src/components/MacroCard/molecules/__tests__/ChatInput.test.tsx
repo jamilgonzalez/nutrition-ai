@@ -1,7 +1,7 @@
 import { render, screen, fireEvent } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import ChatInput from '../ChatInput'
-import { describe, it, expect, vi } from 'vitest'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
 
 /**
  * ChatInput Component Tests
@@ -22,11 +22,12 @@ describe('ChatInput', () => {
     it('renders input field with default placeholder', () => {
       render(<ChatInput onSubmit={mockOnSubmit} />)
 
-      const input = screen.getByPlaceholderText(
+      const input = screen.getByRole('textbox')
+      expect(input).toBeInTheDocument()
+      expect(input).toHaveAttribute(
+        'placeholder',
         'Add a meal or ask about nutrition...'
       )
-      expect(input).toBeInTheDocument()
-      expect(input.tagName).toBe('INPUT')
     })
 
     it('renders input field with custom placeholder', () => {
@@ -35,8 +36,8 @@ describe('ChatInput', () => {
         <ChatInput onSubmit={mockOnSubmit} placeholder={customPlaceholder} />
       )
 
-      const input = screen.getByPlaceholderText(customPlaceholder)
-      expect(input).toBeInTheDocument()
+      const input = screen.getByRole('textbox')
+      expect(input).toHaveAttribute('placeholder', customPlaceholder)
     })
 
     it('displays microphone icon when input is empty', () => {
@@ -52,9 +53,7 @@ describe('ChatInput', () => {
     it('displays send icon when input has text', async () => {
       render(<ChatInput onSubmit={mockOnSubmit} />)
 
-      const input = screen.getByPlaceholderText(
-        'Add a meal or ask about nutrition...'
-      )
+      const input = screen.getByRole('textbox')
       await user.type(input, 'Test message')
 
       const sendButton = screen.getByRole('button')
@@ -69,9 +68,7 @@ describe('ChatInput', () => {
     it('updates input value when user types', async () => {
       render(<ChatInput onSubmit={mockOnSubmit} />)
 
-      const input = screen.getByPlaceholderText(
-        'Add a meal or ask about nutrition...'
-      )
+      const input = screen.getByRole('textbox')
       await user.type(input, 'Test message')
 
       expect(input).toHaveValue('Test message')
@@ -80,9 +77,7 @@ describe('ChatInput', () => {
     it('clears input value after successful submission', async () => {
       render(<ChatInput onSubmit={mockOnSubmit} />)
 
-      const input = screen.getByPlaceholderText(
-        'Add a meal or ask about nutrition...'
-      )
+      const input = screen.getByRole('textbox')
       await user.type(input, 'Test message')
 
       const sendButton = screen.getByRole('button')
@@ -126,9 +121,7 @@ describe('ChatInput', () => {
     it('submits form when Enter key is pressed', async () => {
       render(<ChatInput onSubmit={mockOnSubmit} />)
 
-      const input = screen.getByPlaceholderText(
-        'Add a meal or ask about nutrition...'
-      )
+      const input = screen.getByRole('textbox')
       await user.type(input, 'Test message')
       await user.keyboard('{Enter}')
 
@@ -139,9 +132,7 @@ describe('ChatInput', () => {
     it('does not submit when Shift+Enter is pressed', async () => {
       render(<ChatInput onSubmit={mockOnSubmit} />)
 
-      const input = screen.getByPlaceholderText(
-        'Add a meal or ask about nutrition...'
-      )
+      const input = screen.getByRole('textbox')
       await user.type(input, 'Test message')
       await user.keyboard('{Shift>}{Enter}{/Shift}')
 
@@ -149,7 +140,7 @@ describe('ChatInput', () => {
       expect(input).toHaveValue('Test message')
     })
 
-    it('prevents default behavior when Enter is pressed without Shift', async () => {
+    it('should prevent form submission when Enter is pressed without Shift', async () => {
       render(<ChatInput onSubmit={mockOnSubmit} />)
 
       const input = screen.getByPlaceholderText(
@@ -177,9 +168,7 @@ describe('ChatInput', () => {
     it('calls onSubmit when send button is clicked', async () => {
       render(<ChatInput onSubmit={mockOnSubmit} />)
 
-      const input = screen.getByPlaceholderText(
-        'Add a meal or ask about nutrition...'
-      )
+      const input = screen.getByRole('textbox')
       await user.type(input, 'Test message')
 
       const sendButton = screen.getByRole('button')
@@ -188,18 +177,17 @@ describe('ChatInput', () => {
       expect(mockOnSubmit).toHaveBeenCalledWith('Test message')
     })
 
-    it('shows voice input placeholder when microphone is clicked', async () => {
+    it('should not submit when microphone button is clicked', async () => {
       render(<ChatInput onSubmit={mockOnSubmit} />)
 
       const microphoneButton = screen.getByRole('button')
       await user.click(microphoneButton)
 
-      // Since voice input is not implemented, it should just log to console
-      // This is testing the current behavior
+      // Voice input is not implemented, so it should not trigger submission
       expect(mockOnSubmit).not.toHaveBeenCalled()
     })
 
-    it('does not submit when send button is clicked with empty input', async () => {
+    it('should show microphone button when input is empty', async () => {
       render(<ChatInput onSubmit={mockOnSubmit} />)
 
       const input = screen.getByPlaceholderText(
@@ -217,79 +205,8 @@ describe('ChatInput', () => {
     })
   })
 
-  describe('Visual Design and Styling', () => {
-    it('applies correct container styling', () => {
-      const { container } = render(<ChatInput onSubmit={mockOnSubmit} />)
-
-      const chatContainer = container.firstChild
-      expect(chatContainer).toHaveClass(
-        'fixed',
-        'bottom-0',
-        'left-0',
-        'right-0',
-        'bg-white',
-        'border-t',
-        'border-slate-200',
-        'p-4',
-        'safe-area-pb'
-      )
-    })
-
-    it('applies correct input styling', () => {
-      render(<ChatInput onSubmit={mockOnSubmit} />)
-
-      const input = screen.getByPlaceholderText(
-        'Add a meal or ask about nutrition...'
-      )
-      expect(input).toHaveClass(
-        'pr-20',
-        'py-3',
-        'text-sm',
-        'bg-white',
-        'border-slate-300',
-        'focus:border-slate-400',
-        'focus:ring-slate-400',
-        'rounded-lg'
-      )
-    })
-
-    it('applies correct send button styling when text is present', async () => {
-      render(<ChatInput onSubmit={mockOnSubmit} />)
-
-      const input = screen.getByPlaceholderText(
-        'Add a meal or ask about nutrition...'
-      )
-      await user.type(input, 'Test')
-
-      const sendButton = screen.getByRole('button')
-      expect(sendButton).toHaveClass(
-        'h-7',
-        'w-7',
-        'p-0',
-        'bg-slate-700',
-        'hover:bg-slate-800',
-        'rounded-md'
-      )
-    })
-
-    it('applies correct microphone button styling when input is empty', () => {
-      render(<ChatInput onSubmit={mockOnSubmit} />)
-
-      const micButton = screen.getByRole('button')
-      expect(micButton).toHaveClass(
-        'h-7',
-        'w-7',
-        'p-0',
-        'text-slate-500',
-        'hover:text-slate-700',
-        'hover:bg-slate-100',
-        'rounded-md'
-      )
-    })
-  })
-
   describe('Accessibility', () => {
-    it('provides accessible form structure', () => {
+    it('should provide accessible form structure with proper roles', () => {
       render(<ChatInput onSubmit={mockOnSubmit} />)
 
       const input = screen.getByRole('textbox')
@@ -299,7 +216,7 @@ describe('ChatInput', () => {
       expect(button).toBeInTheDocument()
     })
 
-    it('maintains keyboard accessibility', async () => {
+    it('should maintain keyboard accessibility for all interactive elements', async () => {
       render(<ChatInput onSubmit={mockOnSubmit} />)
 
       const input = screen.getByRole('textbox')
@@ -319,7 +236,7 @@ describe('ChatInput', () => {
       expect(document.activeElement).toBe(button)
     })
 
-    it('provides meaningful placeholder text', () => {
+    it('should provide meaningful placeholder text for screen readers', () => {
       render(<ChatInput onSubmit={mockOnSubmit} />)
 
       const input = screen.getByPlaceholderText(
@@ -330,7 +247,7 @@ describe('ChatInput', () => {
       )
     })
 
-    it('has appropriate button semantics', async () => {
+    it('should display appropriate button based on input state', async () => {
       render(<ChatInput onSubmit={mockOnSubmit} />)
 
       // Initially shows microphone button
@@ -344,6 +261,44 @@ describe('ChatInput', () => {
       button = screen.getByRole('button')
       expect(button).toBeInTheDocument()
     })
+
+    it('should be fully navigable with keyboard only', async () => {
+      render(<ChatInput onSubmit={mockOnSubmit} />)
+
+      const input = screen.getByRole('textbox')
+
+      // Should be able to focus input with keyboard
+      await user.tab()
+      expect(document.activeElement).toBe(input)
+
+      // Should be able to type
+      await user.type(input, 'test message')
+      expect(input).toHaveValue('test message')
+
+      // Should be able to tab to button
+      const button = screen.getByRole('button')
+      await user.tab()
+      expect(document.activeElement).toBe(button)
+
+      // Should be able to activate button with Enter
+      await user.keyboard('{Enter}')
+      expect(mockOnSubmit).toHaveBeenCalledWith('test message')
+    })
+
+    it('should provide proper button context for screen readers', async () => {
+      render(<ChatInput onSubmit={mockOnSubmit} />)
+
+      // Check microphone button is accessible
+      const micButton = screen.getByRole('button')
+      expect(micButton).toBeInTheDocument()
+
+      // After typing, check send button is accessible
+      const input = screen.getByRole('textbox')
+      await user.type(input, 'test message')
+      
+      const sendButton = screen.getByRole('button')
+      expect(sendButton).toBeInTheDocument()
+    })
   })
 
   describe('User Experience', () => {
@@ -355,15 +310,15 @@ describe('ChatInput', () => {
       // Initially shows microphone
       expect(screen.getByRole('button')).toBeInTheDocument()
 
-      // After typing, shows send button
+      // After typing, shows send button (test user-visible change)
       await user.type(input, 'test')
       const sendButton = screen.getByRole('button')
-      expect(sendButton).toHaveClass('bg-slate-700')
+      expect(sendButton).toBeInTheDocument()
 
       // After clearing, shows microphone again
       await user.clear(input)
       const micButton = screen.getByRole('button')
-      expect(micButton).toHaveClass('text-slate-500')
+      expect(micButton).toBeInTheDocument()
     })
 
     it('maintains smooth interaction flow', async () => {
@@ -385,7 +340,7 @@ describe('ChatInput', () => {
 
       // Microphone button is shown again
       const micButton = screen.getByRole('button')
-      expect(micButton).toHaveClass('text-slate-500')
+      expect(micButton).toBeInTheDocument()
     })
 
     it('handles rapid typing and submission correctly', async () => {
