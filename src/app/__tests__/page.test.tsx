@@ -5,8 +5,8 @@ import { useNutritionData } from '@/hooks/useNutritionData'
 
 // Mock the hooks and components
 vi.mock('@/hooks/useNutritionData')
-vi.mock('@/components/MacroCard', () => ({
-  MobileNutritionTracker: function MockMobileNutritionTracker({
+vi.mock('@/components/NutritionTracker', () => ({
+  NutritionTracker: function MockNutritionTracker({
     data,
     onDeleteMeal,
     isLoading,
@@ -77,14 +77,14 @@ describe('Home Page', () => {
       })
     })
 
-    it('renders both MobileNutritionTracker and MealChatInput components', () => {
+    it('renders both NutritionTracker and MealChatInput components', () => {
       render(<Home />)
 
       expect(screen.getByTestId('mobile-nutrition-tracker')).toBeInTheDocument()
       expect(screen.getByTestId('meal-chat-input')).toBeInTheDocument()
     })
 
-    it('passes correct props to MobileNutritionTracker', () => {
+    it('passes correct props to NutritionTracker', () => {
       render(<Home />)
 
       expect(screen.getByTestId('nutrition-data')).toHaveTextContent(
@@ -107,7 +107,7 @@ describe('Home Page', () => {
       expect(mockLoadNutritionData).toHaveBeenCalledTimes(1)
     })
 
-    it('handles meal deletion through MobileNutritionTracker', () => {
+    it('handles meal deletion through NutritionTracker', () => {
       render(<Home />)
 
       const deleteButton = screen.getByTestId('delete-meal-btn')
@@ -128,7 +128,7 @@ describe('Home Page', () => {
       })
     })
 
-    it('passes loading state to MobileNutritionTracker', () => {
+    it('passes loading state to NutritionTracker', () => {
       render(<Home />)
 
       expect(screen.getByTestId('loading-state')).toHaveTextContent('loading')
@@ -149,7 +149,7 @@ describe('Home Page', () => {
       })
     })
 
-    it('passes error state to MobileNutritionTracker', () => {
+    it('passes error state to NutritionTracker', () => {
       render(<Home />)
 
       expect(screen.getByTestId('loading-state')).toHaveTextContent(
@@ -259,7 +259,7 @@ describe('Home Page', () => {
       expect(mockLoadNutritionData).toHaveBeenCalledTimes(1)
     })
 
-    it('connects MobileNutritionTracker onDeleteMeal to hook handleDeleteMeal', () => {
+    it('connects NutritionTracker onDeleteMeal to hook handleDeleteMeal', () => {
       render(<Home />)
 
       const deleteButton = screen.getByTestId('delete-meal-btn')

@@ -1,54 +1,67 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import MobileNutritionTracker from '../MobileNutritionTracker'
-import { MobileNutritionData } from '@/utils/mealTransformation'
-import { vi, describe, it, expect } from 'vitest'
+import { vi, describe, it, expect, beforeEach } from 'vitest'
 
-// Mock child components
-vi.mock('../../molecules/MobileNutritionOverview', () => ({
-  default: function MockMobileNutritionOverview({
-    caloriesConsumed,
-    caloriesGoal,
-    caloriesRemaining,
-  }: any) {
-    return (
+// Mock child components - these need to be at the top level
+vi.mock('../molecules/MobileNutritionOverview', () => ({
+  default: vi.fn(
+    ({ caloriesConsumed, caloriesGoal, caloriesRemaining }: any) => (
       <div data-testid="nutrition-overview">
         <span data-testid="calories-consumed">{caloriesConsumed}</span>
         <span data-testid="calories-goal">{caloriesGoal}</span>
         <span data-testid="calories-remaining">{caloriesRemaining}</span>
       </div>
     )
-  },
+  ),
 }))
 
-vi.mock('../../molecules/MobileMacroGrid', () => ({
-  default: function MockMobileMacroGrid({ macros }: any) {
-    return (
-      <div data-testid="macro-grid">
-        <span data-testid="protein-current">{macros.protein.current}</span>
-        <span data-testid="carbs-current">{macros.carbs.current}</span>
-        <span data-testid="fat-current">{macros.fat.current}</span>
-      </div>
-    )
-  },
+vi.mock('../molecules/MobileMacroGrid', () => ({
+  default: vi.fn(({ macros }: any) => (
+    <div data-testid="macro-grid">
+      <span data-testid="protein-current">{macros.protein.current}</span>
+      <span data-testid="carbs-current">{macros.carbs.current}</span>
+      <span data-testid="fat-current">{macros.fat.current}</span>
+    </div>
+  )),
 }))
 
-vi.mock('../../molecules/MobileMealItem', () => ({
-  default: function MockMobileMealItem({ item, onDelete }: any) {
+vi.mock('../molecules/MobileMealItem', () => ({
+  default: vi.fn(({ item, onDelete }: any) => (
+    <div data-testid={`meal-item-${item.id}`}>
+      <span>{item.name}</span>
+      {onDelete && (
+        <button onClick={() => onDelete()} data-testid={`delete-${item.id}`}>
+          Delete
+        </button>
+      )}
+    </div>
+  )),
+}))
+
+vi.mock('../organisms/DeleteConfirmDialog', () => ({
+  default: vi.fn(({ isOpen, onConfirm, onCancel }: any) => {
+    if (!isOpen) return null
     return (
-      <div data-testid={`meal-item-${item.id}`}>
-        <span>{item.name}</span>
-        {onDelete && (
-          <button onClick={() => onDelete()} data-testid={`delete-${item.id}`}>
-            Delete
-          </button>
-        )}
+      <div data-testid="delete-confirm-dialog">
+        <button onClick={onConfirm} data-testid="confirm-delete">
+          Delete
+        </button>
+        <button onClick={onCancel} data-testid="cancel-delete">
+          Cancel
+        </button>
       </div>
     )
-  },
+  }),
 }))
+
+import MobileNutritionTracker from '../MobileNutritionTracker'
+import { MobileNutritionData } from '@/utils/mealTransformation'
 
 describe('MobileNutritionTracker', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
   const mockMobileNutritionData: MobileNutritionData = {
     caloriesConsumed: 1500,
     caloriesGoal: 2000,
@@ -172,7 +185,7 @@ describe('MobileNutritionTracker', () => {
   })
 
   describe('meal deletion functionality', () => {
-    it('calls onDeleteMeal when delete button is clicked', async () => {
+    it('calls onDeleteMeal when delete button is clicked and confirmed', async () => {
       const user = userEvent.setup()
       const mockOnDeleteMeal = vi.fn()
 
@@ -186,7 +199,38 @@ describe('MobileNutritionTracker', () => {
       const deleteButton = screen.getByTestId('delete-1')
       await user.click(deleteButton)
 
+      // Confirm dialog should appear
+      expect(screen.getByTestId('delete-confirm-dialog')).toBeInTheDocument()
+
+      // Click confirm
+      const confirmButton = screen.getByTestId('confirm-delete')
+      await user.click(confirmButton)
+
       expect(mockOnDeleteMeal).toHaveBeenCalledWith('1')
+    })
+
+    it('does not call onDeleteMeal when delete is cancelled', async () => {
+      const user = userEvent.setup()
+      const mockOnDeleteMeal = vi.fn()
+
+      render(
+        <MobileNutritionTracker
+          data={mockMobileNutritionData}
+          onDeleteMeal={mockOnDeleteMeal}
+        />
+      )
+
+      const deleteButton = screen.getByTestId('delete-1')
+      await user.click(deleteButton)
+
+      // Confirm dialog should appear
+      expect(screen.getByTestId('delete-confirm-dialog')).toBeInTheDocument()
+
+      // Click cancel
+      const cancelButton = screen.getByTestId('cancel-delete')
+      await user.click(cancelButton)
+
+      expect(mockOnDeleteMeal).not.toHaveBeenCalled()
     })
 
     it('does not render delete buttons when onDeleteMeal is not provided', () => {
