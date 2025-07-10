@@ -39,7 +39,10 @@ export async function POST(req: Request) {
           }),
           execute: async ({ query }) => {
             console.log('Searching for:', query)
-            const results = await tvly.search(query)
+            const results = await tvly.search(query, {
+              maxResults: 10,
+              searchDepth: 'advanced',
+            })
             return {
               success: true,
               results,

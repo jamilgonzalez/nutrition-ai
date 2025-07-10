@@ -6,25 +6,30 @@ import { useNutritionData } from '@/hooks/useNutritionData'
 // Mock the hooks and components
 vi.mock('@/hooks/useNutritionData')
 vi.mock('@/components/MacroCard', () => ({
-  MobileNutritionTracker: function MockMobileNutritionTracker({ 
-    data, 
-    onDeleteMeal, 
-    isLoading, 
-    error 
+  MobileNutritionTracker: function MockMobileNutritionTracker({
+    data,
+    onDeleteMeal,
+    isLoading,
+    error,
   }: any) {
     return (
       <div data-testid="mobile-nutrition-tracker">
         <div data-testid="nutrition-data">{JSON.stringify(data)}</div>
-        <div data-testid="loading-state">{isLoading ? 'loading' : 'not-loading'}</div>
+        <div data-testid="loading-state">
+          {isLoading ? 'loading' : 'not-loading'}
+        </div>
         <div data-testid="error-state">{error || 'no-error'}</div>
         {onDeleteMeal && (
-          <button onClick={() => onDeleteMeal('test-id')} data-testid="delete-meal-btn">
+          <button
+            onClick={() => onDeleteMeal('test-id')}
+            data-testid="delete-meal-btn"
+          >
             Delete Meal
           </button>
         )}
       </div>
     )
-  }
+  },
 }))
 
 vi.mock('@/components/MealChatInput', () => ({
@@ -36,7 +41,7 @@ vi.mock('@/components/MealChatInput', () => ({
         </button>
       </div>
     )
-  }
+  },
 }))
 
 const mockUseNutritionData = vi.mocked(useNutritionData)
@@ -49,9 +54,9 @@ describe('Home Page', () => {
     macros: {
       protein: { current: 60, goal: 120, unit: 'g' },
       carbs: { current: 100, goal: 250, unit: 'g' },
-      fat: { current: 30, goal: 70, unit: 'g' }
+      fat: { current: 30, goal: 70, unit: 'g' },
     },
-    meals: []
+    meals: [],
   }
 
   const mockLoadNutritionData = vi.fn()
@@ -68,7 +73,7 @@ describe('Home Page', () => {
         loadNutritionData: mockLoadNutritionData,
         handleDeleteMeal: mockHandleDeleteMeal,
         isLoading: false,
-        error: null
+        error: null,
       })
     })
 
@@ -85,7 +90,9 @@ describe('Home Page', () => {
       expect(screen.getByTestId('nutrition-data')).toHaveTextContent(
         JSON.stringify(mockNutritionData)
       )
-      expect(screen.getByTestId('loading-state')).toHaveTextContent('not-loading')
+      expect(screen.getByTestId('loading-state')).toHaveTextContent(
+        'not-loading'
+      )
       expect(screen.getByTestId('error-state')).toHaveTextContent('no-error')
     })
 
@@ -94,7 +101,7 @@ describe('Home Page', () => {
 
       const saveButton = screen.getByTestId('save-meal-btn')
       expect(saveButton).toBeInTheDocument()
-      
+
       // Click should call loadNutritionData
       saveButton.click()
       expect(mockLoadNutritionData).toHaveBeenCalledTimes(1)
@@ -117,7 +124,7 @@ describe('Home Page', () => {
         loadNutritionData: mockLoadNutritionData,
         handleDeleteMeal: mockHandleDeleteMeal,
         isLoading: true,
-        error: null
+        error: null,
       })
     })
 
@@ -138,14 +145,16 @@ describe('Home Page', () => {
         loadNutritionData: mockLoadNutritionData,
         handleDeleteMeal: mockHandleDeleteMeal,
         isLoading: false,
-        error: errorMessage
+        error: errorMessage,
       })
     })
 
     it('passes error state to MobileNutritionTracker', () => {
       render(<Home />)
 
-      expect(screen.getByTestId('loading-state')).toHaveTextContent('not-loading')
+      expect(screen.getByTestId('loading-state')).toHaveTextContent(
+        'not-loading'
+      )
       expect(screen.getByTestId('error-state')).toHaveTextContent(errorMessage)
     })
 
@@ -163,21 +172,25 @@ describe('Home Page', () => {
         loadNutritionData: mockLoadNutritionData,
         handleDeleteMeal: mockHandleDeleteMeal,
         isLoading: false,
-        error: null
+        error: null,
       })
     })
 
     it('has proper flexbox layout structure', () => {
       render(<Home />)
 
-      const container = screen.getByTestId('mobile-nutrition-tracker').parentElement
+      const container = screen.getByTestId(
+        'mobile-nutrition-tracker'
+      ).parentElement
       expect(container).toHaveClass('flex', 'flex-col', 'min-h-screen')
     })
 
     it('renders components in correct order', () => {
       render(<Home />)
 
-      const container = screen.getByTestId('mobile-nutrition-tracker').parentElement
+      const container = screen.getByTestId(
+        'mobile-nutrition-tracker'
+      ).parentElement
       const children = container?.children
 
       expect(children?.[0]).toBe(screen.getByTestId('mobile-nutrition-tracker'))
@@ -192,7 +205,7 @@ describe('Home Page', () => {
         loadNutritionData: mockLoadNutritionData,
         handleDeleteMeal: mockHandleDeleteMeal,
         isLoading: false,
-        error: null
+        error: null,
       })
 
       render(<Home />)
@@ -206,7 +219,7 @@ describe('Home Page', () => {
         loadNutritionData: mockLoadNutritionData,
         handleDeleteMeal: mockHandleDeleteMeal,
         isLoading: false,
-        error: null
+        error: null,
       })
 
       render(<Home />)
@@ -227,7 +240,7 @@ describe('Home Page', () => {
         loadNutritionData: mockLoadNutritionData,
         handleDeleteMeal: mockHandleDeleteMeal,
         isLoading: false,
-        error: null
+        error: null,
       })
     })
 
@@ -235,13 +248,13 @@ describe('Home Page', () => {
       render(<Home />)
 
       const saveButton = screen.getByTestId('save-meal-btn')
-      
+
       // Initial state
       expect(mockLoadNutritionData).not.toHaveBeenCalled()
-      
+
       // Trigger save
       saveButton.click()
-      
+
       // Should call loadNutritionData
       expect(mockLoadNutritionData).toHaveBeenCalledTimes(1)
     })
@@ -250,13 +263,13 @@ describe('Home Page', () => {
       render(<Home />)
 
       const deleteButton = screen.getByTestId('delete-meal-btn')
-      
+
       // Initial state
       expect(mockHandleDeleteMeal).not.toHaveBeenCalled()
-      
+
       // Trigger delete
       deleteButton.click()
-      
+
       // Should call handleDeleteMeal with meal ID
       expect(mockHandleDeleteMeal).toHaveBeenCalledWith('test-id')
     })
@@ -269,16 +282,18 @@ describe('Home Page', () => {
         loadNutritionData: mockLoadNutritionData,
         handleDeleteMeal: mockHandleDeleteMeal,
         isLoading: false,
-        error: null
+        error: null,
       })
     })
 
     it('has proper semantic structure for main application layout', () => {
       render(<Home />)
 
-      const container = screen.getByTestId('mobile-nutrition-tracker').parentElement
+      const container = screen.getByTestId(
+        'mobile-nutrition-tracker'
+      ).parentElement
       expect(container).toHaveClass('min-h-screen')
-      
+
       // Should have proper flex layout for mobile experience
       expect(container).toHaveClass('flex', 'flex-col')
     })

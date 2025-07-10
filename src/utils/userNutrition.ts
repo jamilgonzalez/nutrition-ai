@@ -1,7 +1,7 @@
 import { useCallback } from 'react'
 import { useUser } from '@clerk/nextjs'
 import DatabaseStub from '@/lib/database'
-import { DEFAULT_DAILY_GOALS } from '@/components/MacroCard/constants'
+import { DEFAULT_DAILY_GOALS } from '@/components/NutritionTracker/constants'
 
 export interface UserNutritionGoals {
   calories: number
@@ -11,7 +11,10 @@ export interface UserNutritionGoals {
 }
 
 // Simple cache to prevent repeated database calls
-const nutritionGoalsCache = new Map<string, { goals: UserNutritionGoals; timestamp: number }>()
+const nutritionGoalsCache = new Map<
+  string,
+  { goals: UserNutritionGoals; timestamp: number }
+>()
 const CACHE_DURATION = 5 * 60 * 1000 // 5 minutes
 
 export function clearNutritionGoalsCache(userId?: string) {
@@ -22,7 +25,9 @@ export function clearNutritionGoalsCache(userId?: string) {
   }
 }
 
-export async function getUserNutritionGoals(userId: string): Promise<UserNutritionGoals> {
+export async function getUserNutritionGoals(
+  userId: string
+): Promise<UserNutritionGoals> {
   try {
     // Check cache first
     const cached = nutritionGoalsCache.get(userId)
@@ -32,7 +37,7 @@ export async function getUserNutritionGoals(userId: string): Promise<UserNutriti
 
     // First try to get nutrition targets
     const nutritionTargets = await DatabaseStub.getNutritionTargets(userId)
-    
+
     let goals: UserNutritionGoals
 
     if (nutritionTargets) {
@@ -45,7 +50,7 @@ export async function getUserNutritionGoals(userId: string): Promise<UserNutriti
     } else {
       // If no nutrition targets, try to get from user profile
       const userProfile = await DatabaseStub.getUserProfile(userId)
-      
+
       if (userProfile?.dailyCalories) {
         goals = {
           calories: userProfile.dailyCalories,
@@ -66,7 +71,7 @@ export async function getUserNutritionGoals(userId: string): Promise<UserNutriti
 
     // Cache the result
     nutritionGoalsCache.set(userId, { goals, timestamp: Date.now() })
-    
+
     return goals
   } catch (error) {
     console.error('Error loading user nutrition goals:', error)
@@ -82,7 +87,7 @@ export async function getUserNutritionGoals(userId: string): Promise<UserNutriti
 
 export function useUserNutritionGoals() {
   const { user } = useUser()
-  
+
   const loadUserGoals = useCallback(async (): Promise<UserNutritionGoals> => {
     if (!user?.id) {
       return {
@@ -92,9 +97,9 @@ export function useUserNutritionGoals() {
         fat: DEFAULT_DAILY_GOALS.fat,
       }
     }
-    
+
     return await getUserNutritionGoals(user.id)
   }, [user?.id])
-  
+
   return { loadUserGoals }
 }

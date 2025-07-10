@@ -1,5 +1,5 @@
 import { RecordedMeal } from '@/lib/mealStorage'
-import { DEFAULT_DAILY_GOALS } from '@/components/MacroCard/constants'
+import { DEFAULT_DAILY_GOALS } from '@/components/NutritionTracker/constants'
 import { UserNutritionGoals } from '@/utils/userNutrition'
 
 // Type definitions for mobile meal data
@@ -57,7 +57,9 @@ export const getMealEmoji = (mealType: string): string => {
   }
 }
 
-export const transformMealsToMobileFormat = (meals: RecordedMeal[]): MobileMealGroup[] => {
+export const transformMealsToMobileFormat = (
+  meals: RecordedMeal[]
+): MobileMealGroup[] => {
   return meals.reduce((acc: MobileMealGroup[], meal) => {
     // Use meal's actual type if available, otherwise derive from timestamp
     const mealType = meal.fullNutritionData?.mealType

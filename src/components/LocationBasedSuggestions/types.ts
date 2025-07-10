@@ -1,5 +1,5 @@
 import { MenuItem, MacroTargets } from '@/types/restaurant'
-import { DailyNutritionData } from '../MacroCard'
+import { DailyNutritionData } from '../NutritionTracker'
 
 export interface LocationBasedSuggestionsProps {
   dailyNutritionData: DailyNutritionData
