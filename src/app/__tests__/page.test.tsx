@@ -33,7 +33,7 @@ vi.mock('@/components/NutritionTracker', () => ({
 }))
 
 vi.mock('@/components/MealChatInput', () => ({
-  default: function MockMealChatInput({ onMealSaved }: any) {
+  MealChatInput: function MockMealChatInput({ onMealSaved }: any) {
     return (
       <div data-testid="meal-chat-input">
         <button onClick={onMealSaved} data-testid="save-meal-btn">

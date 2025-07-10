@@ -1,7 +1,7 @@
 'use client'
 
 import { NutritionTracker } from '@/components/NutritionTracker'
-import MealChatInput from '@/components/MealChatInput'
+import { MealChatInput } from '@/components/MealChatInput'
 import { useNutritionData } from '@/hooks/useNutritionData'
 
 export default function Home() {
