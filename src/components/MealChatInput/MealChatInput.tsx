@@ -77,20 +77,50 @@ export default function MealChatInput({ onMealSaved }: MealChatInputProps) {
     }
 
     try {
-      const { data: nutritionData, error } = await analyzeMeal({
+      const {
+        data: nutritionData,
+        error,
+        errorCode,
+        retryable,
+      } = await analyzeMeal({
         message: messageText,
         image: selectedImage || undefined,
       })
-      
+
       const analysisTime = Date.now() - analysisStartTime
 
       if (error) {
         console.error('Error analyzing meal:', error)
+
+        // Track error
+        if (user) {
+          analytics.errorOccurred(user.id, error, 'meal_analysis')
+        }
+
+        // Show specific error message to user
+        toast.error(`Analysis Failed`, {
+          description: error,
+        })
+
+        // Only clear form data if error is not retryable
+        if (!retryable) {
+          setMessage('')
+          clearTranscript()
+          setIsExpanded(false)
+          if (selectedImage) {
+            handleImageChange(null)
+          }
+        }
+
         return
       }
 
       if (!nutritionData) {
         console.error('No nutrition data received')
+        toast.error('Analysis Failed', {
+          description:
+            'No nutrition data was generated. Please try again with a different image or description.',
+        })
         return
       }
 
@@ -121,7 +151,7 @@ export default function MealChatInput({ onMealSaved }: MealChatInputProps) {
           analysisTime,
           calories: nutritionData.totalCalories || 0,
         })
-        
+
         analytics.mealAdded(user.id, {
           calories: nutritionData.totalCalories || 0,
           protein: nutritionData.macros?.protein || 0,
@@ -136,26 +166,29 @@ export default function MealChatInput({ onMealSaved }: MealChatInputProps) {
       toast('Meal saved successfully!', {
         description: 'Your meal has been added to your nutrition tracker',
       })
-    } catch (error) {
-      console.error('Error generating and saving nutrition data:', error)
-      
-      // Track error
-      if (user) {
-        analytics.errorOccurred(user.id, error instanceof Error ? error.message : 'Unknown error', 'meal_analysis')
-      }
-      
-      toast('Failed to save meal', {
-        description: 'Please try again',
-      })
-    } finally {
-      // Reset form state
+
+      // Reset form state only on successful completion
       setMessage('')
       clearTranscript()
       setIsExpanded(false)
-
       if (selectedImage) {
         handleImageChange(null)
       }
+    } catch (error) {
+      console.error('Error generating and saving nutrition data:', error)
+
+      // Track error
+      if (user) {
+        analytics.errorOccurred(
+          user.id,
+          error instanceof Error ? error.message : 'Unknown error',
+          'meal_analysis'
+        )
+      }
+
+      toast.error('Failed to save meal', {
+        description: 'Please try again',
+      })
     }
   }
 

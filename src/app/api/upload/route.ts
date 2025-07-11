@@ -91,6 +91,7 @@ export async function POST(req: Request) {
         - relevance: Rate as 'high', 'medium', or 'low' based on how directly it supports your analysis
         `,
       messages: [latestMessage],
+      maxRetries: 5,
     })
 
     const objectEndTime = Date.now()
@@ -117,8 +118,41 @@ export async function POST(req: Request) {
     console.error('Error generating structured nutrition data:', error)
     console.log('🏁 Upload API ended at:', new Date().toISOString())
 
+    // Provide specific error messages based on error type
+    let errorMessage = 'Failed to analyze nutrition data'
+    let errorCode = 'GENERAL_ERROR'
+
+    if (error instanceof Error) {
+      if (
+        error.message.includes('No object generated') ||
+        error.message.includes('AI_NoObjectGeneratedError')
+      ) {
+        errorMessage =
+          'Unable to extract nutrition information from the provided content. Please try with a clearer image or more detailed description.'
+        errorCode = 'NO_NUTRITION_DATA'
+      } else if (
+        error.message.includes('rate limit') ||
+        error.message.includes('quota')
+      ) {
+        errorMessage =
+          'Service temporarily overloaded. Please try again in a few moments.'
+        errorCode = 'RATE_LIMIT'
+      } else if (
+        error.message.includes('network') ||
+        error.message.includes('timeout')
+      ) {
+        errorMessage =
+          'Network error occurred. Please check your connection and try again.'
+        errorCode = 'NETWORK_ERROR'
+      }
+    }
+
     return Response.json(
-      { error: 'Failed to analyze nutrition data' },
+      {
+        error: errorMessage,
+        code: errorCode,
+        retryable: errorCode !== 'NO_NUTRITION_DATA',
+      },
       { status: 500 }
     )
   }

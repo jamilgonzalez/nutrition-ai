@@ -54,6 +54,8 @@ export interface MealAnalysisRequest {
 export interface MealAnalysisResponse {
   data: NutritionData | null
   error: string | null
+  errorCode?: string
+  retryable?: boolean
 }
 
 export interface StreamingMealAnalysisHook {
@@ -168,7 +170,13 @@ export function useStreamingMealAnalysis(): StreamingMealAnalysisHook {
       }
 
       if (!response.ok) {
-        throw new Error('Failed to get structured nutrition analysis')
+        const errorData = await response.json().catch(() => ({}))
+        return {
+          data: null,
+          error: errorData.error || 'Failed to get structured nutrition analysis',
+          errorCode: errorData.code,
+          retryable: errorData.retryable
+        }
       }
 
       const nutritionData = await response.json()

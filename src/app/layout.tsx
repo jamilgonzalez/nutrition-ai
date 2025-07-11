@@ -75,7 +75,7 @@ export default function RootLayout({
 
           <Toaster
             position="top-center"
-            duration={3000}
+            duration={6000}
             richColors
             toastOptions={{
               style: {

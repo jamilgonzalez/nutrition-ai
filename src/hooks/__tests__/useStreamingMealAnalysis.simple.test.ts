@@ -93,6 +93,9 @@ describe('useStreamingMealAnalysis', () => {
     const mockResponse = {
       ok: false,
       status: 500,
+      json: vi.fn().mockResolvedValue({
+        error: 'Failed to get structured nutrition analysis',
+      }),
     }
     ;(fetch as any).mockResolvedValue(mockResponse)
 
