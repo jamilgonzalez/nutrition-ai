@@ -43,3 +43,5 @@ next-env.d.ts
 /epics
 /planning
 *.local.*
+
+.env.local
