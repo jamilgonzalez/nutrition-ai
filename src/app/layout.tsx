@@ -12,6 +12,7 @@ import './styles/globals.css'
 import AppWrapper from '@/components/AppWrapper'
 import LandingPage from '@/components/LandingPage'
 import { Toaster } from '@/components/ui/sonner'
+import { Analytics } from '@vercel/analytics/next'
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -66,8 +67,12 @@ export default function RootLayout({
           </SignedOut>
 
           <SignedIn>
-            <AppWrapper>{children}</AppWrapper>
+            <AppWrapper>
+              {children}
+              <Analytics />
+            </AppWrapper>
           </SignedIn>
+
           <Toaster
             position="top-center"
             duration={3000}

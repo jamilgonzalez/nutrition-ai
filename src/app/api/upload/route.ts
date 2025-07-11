@@ -12,9 +12,9 @@ const tvly = tavily({
   apiKey: process.env.TAVILY_API_KEY,
 })
 
-const imageModel = openrouter.chat('openai/gpt-4.1')
+const imageModel = openrouter.chat('openai/gpt-4.1-mini')
 
-const objectModel = openrouter.chat('openai/gpt-4.1')
+const objectModel = openrouter.chat('openai/gpt-4.1-mini')
 
 export async function POST(req: Request) {
   const startTime = Date.now()
