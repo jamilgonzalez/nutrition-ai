@@ -8,6 +8,7 @@ import { GeneratedPlan, AdjustedPlan, SimpleOnboardingData } from '@/types/onboa
 import DatabaseStub from '@/lib/database'
 import { clearNutritionGoalsCache } from '@/utils/userNutrition'
 import { useState, useEffect } from 'react'
+import { analytics } from '@/lib/analytics'
 
 interface AppWrapperProps {
   children: React.ReactNode
@@ -25,6 +26,18 @@ export default function AppWrapper({ children }: AppWrapperProps) {
   const [showTransition, setShowTransition] = useState(false)
   const [transitionComplete, setTransitionComplete] = useState(false)
   
+  // Identify user when they sign in
+  useEffect(() => {
+    if (user && isLoaded) {
+      analytics.userSignedIn(user.id, {
+        email: user.emailAddresses[0]?.emailAddress,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        hasCompletedOnboarding,
+      })
+    }
+  }, [user, isLoaded, hasCompletedOnboarding])
+  
   // Handle the transition when onboarding completes
   useEffect(() => {
     if (hasCompletedOnboarding && !transitionComplete) {
@@ -34,6 +47,13 @@ export default function AppWrapper({ children }: AppWrapperProps) {
       }, 1000)
     }
   }, [hasCompletedOnboarding, transitionComplete])
+
+  // Track onboarding start
+  useEffect(() => {
+    if (user && !hasCompletedOnboarding) {
+      analytics.onboardingStarted(user.id)
+    }
+  }, [user, hasCompletedOnboarding])
 
   // Show loading spinner if Clerk is loading user or if we're checking onboarding status
   if (!isLoaded || isCheckingOnboarding) {
@@ -79,8 +99,12 @@ export default function AppWrapper({ children }: AppWrapperProps) {
         
         // Save the profile and mark onboarding as complete
         await handleOnboardingComplete(userProfile)
+        
+        // Track onboarding completion
+        analytics.onboardingCompleted(user.id, userProfile)
       } catch (error) {
         console.error('Error saving onboarding data:', error)
+        analytics.errorOccurred(user.id, error instanceof Error ? error.message : 'Unknown error', 'onboarding_completion')
       }
     }
 

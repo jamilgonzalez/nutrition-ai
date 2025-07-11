@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef, useMemo } from 'react'
+import { useState, useRef, useMemo, useEffect } from 'react'
 import { useSpeechRecognition } from '@/hooks/useSpeechRecognition'
 import { useImageUpload } from '@/hooks/useImageUpload'
 import { useStreamingMealAnalysis } from '@/hooks/useStreamingMealAnalysis'
@@ -12,6 +12,8 @@ import { ExpandedView } from './organisms/ExpandedView'
 import { InputWithButton } from './molecules/InputWithButton'
 import { InputToolbar } from './organisms/InputToolbar'
 import { StreamingLoadingView } from './organisms/StreamingLoadingView'
+import { analytics } from '@/lib/analytics'
+import { useUser } from '@clerk/nextjs'
 
 interface MealChatInputProps {
   onMealSaved: () => void
@@ -22,6 +24,7 @@ export default function MealChatInput({ onMealSaved }: MealChatInputProps) {
   const [isExpanded, setIsExpanded] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const imageInputRef = useRef<HTMLInputElement>(null)
+  const { user } = useUser()
 
   const {
     isRecording,
@@ -52,6 +55,13 @@ export default function MealChatInput({ onMealSaved }: MealChatInputProps) {
     }
   }, [message, transcript, selectedImage, isLoading, isRecording])
 
+  // Track voice input usage when transcript changes
+  useEffect(() => {
+    if (transcript && !isRecording && user) {
+      analytics.voiceInputUsed(user.id, transcript.length)
+    }
+  }, [transcript, isRecording, user])
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
@@ -59,12 +69,20 @@ export default function MealChatInput({ onMealSaved }: MealChatInputProps) {
 
     const messageText = formState.displayText.trim()
     let objectUrl: string | undefined
+    const analysisStartTime = Date.now()
+
+    // Track chat usage
+    if (user) {
+      analytics.chatUsed(user.id, messageText.length, !!selectedImage)
+    }
 
     try {
       const { data: nutritionData, error } = await analyzeMeal({
         message: messageText,
         image: selectedImage || undefined,
       })
+      
+      const analysisTime = Date.now() - analysisStartTime
 
       if (error) {
         console.error('Error analyzing meal:', error)
@@ -80,7 +98,7 @@ export default function MealChatInput({ onMealSaved }: MealChatInputProps) {
         objectUrl = ObjectURLManager.createObjectURL(selectedImage)
       }
 
-      saveMeal({
+      const mealData = {
         name: nutritionData.mealName || 'Meal from Chat',
         notes: messageText || 'Added via chat',
         image: objectUrl,
@@ -91,7 +109,28 @@ export default function MealChatInput({ onMealSaved }: MealChatInputProps) {
           fat: nutritionData.macros?.fat || 0,
         },
         fullNutritionData: nutritionData,
-      })
+      }
+
+      saveMeal(mealData)
+
+      // Track meal analysis and addition
+      if (user) {
+        analytics.mealAnalyzed(user.id, {
+          image: selectedImage,
+          text: messageText,
+          analysisTime,
+          calories: nutritionData.totalCalories || 0,
+        })
+        
+        analytics.mealAdded(user.id, {
+          calories: nutritionData.totalCalories || 0,
+          protein: nutritionData.macros?.protein || 0,
+          carbs: nutritionData.macros?.carbohydrates || 0,
+          fat: nutritionData.macros?.fat || 0,
+          image: objectUrl,
+          source: 'chat',
+        })
+      }
 
       onMealSaved()
       toast('Meal saved successfully!', {
@@ -99,6 +138,12 @@ export default function MealChatInput({ onMealSaved }: MealChatInputProps) {
       })
     } catch (error) {
       console.error('Error generating and saving nutrition data:', error)
+      
+      // Track error
+      if (user) {
+        analytics.errorOccurred(user.id, error instanceof Error ? error.message : 'Unknown error', 'meal_analysis')
+      }
+      
       toast('Failed to save meal', {
         description: 'Please try again',
       })
