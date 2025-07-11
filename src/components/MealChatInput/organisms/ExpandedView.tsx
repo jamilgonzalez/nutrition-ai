@@ -33,10 +33,7 @@ export function ExpandedView({
       }
     }
 
-    // Focus the close button when the expanded view opens
-    if (closeButtonRef.current) {
-      closeButtonRef.current.focus()
-    }
+    // Handle keyboard navigation without stealing focus from input
 
     document.addEventListener('keydown', handleKeyDown)
     return () => document.removeEventListener('keydown', handleKeyDown)
