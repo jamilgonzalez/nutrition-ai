@@ -14,7 +14,7 @@ const tvly = tavily({
 
 const imageModel = openrouter.chat('openai/gpt-4.1')
 
-const objectModel = openrouter.chat('openai/gpt-4o-mini')
+const objectModel = openrouter.chat('openai/gpt-4.1')
 
 export async function POST(req: Request) {
   const startTime = Date.now()
