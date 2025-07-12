@@ -151,7 +151,7 @@ export async function POST(req: Request) {
       {
         error: errorMessage,
         code: errorCode,
-        retryable: errorCode !== 'NO_NUTRITION_DATA',
+        retryable: true,
       },
       { status: 500 }
     )

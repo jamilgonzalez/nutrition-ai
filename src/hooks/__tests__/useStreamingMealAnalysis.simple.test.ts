@@ -1,4 +1,4 @@
-import { renderHook } from '@testing-library/react'
+import { renderHook, act } from '@testing-library/react'
 import {
   useStreamingMealAnalysis,
   LoadingState,
@@ -61,7 +61,9 @@ describe('useStreamingMealAnalysis', () => {
     expect(typeof result.current.cancelAnalysis).toBe('function')
 
     // Cancel should not throw
-    expect(() => result.current.cancelAnalysis()).not.toThrow()
+    act(() => {
+      result.current.cancelAnalysis()
+    })
   })
 
   it('should handle successful API response', async () => {
@@ -83,7 +85,10 @@ describe('useStreamingMealAnalysis', () => {
 
     const { result } = renderHook(() => useStreamingMealAnalysis())
 
-    const response = await result.current.analyzeMeal({ message: 'Test meal' })
+    let response
+    await act(async () => {
+      response = await result.current.analyzeMeal({ message: 'Test meal' })
+    })
 
     expect(response.data).toEqual(mockNutritionData)
     expect(response.error).toBeNull()
@@ -101,7 +106,10 @@ describe('useStreamingMealAnalysis', () => {
 
     const { result } = renderHook(() => useStreamingMealAnalysis())
 
-    const response = await result.current.analyzeMeal({ message: 'Test meal' })
+    let response
+    await act(async () => {
+      response = await result.current.analyzeMeal({ message: 'Test meal' })
+    })
 
     expect(response.error).toBe('Failed to get structured nutrition analysis')
     expect(response.data).toBeNull()
@@ -112,7 +120,10 @@ describe('useStreamingMealAnalysis', () => {
 
     const { result } = renderHook(() => useStreamingMealAnalysis())
 
-    const response = await result.current.analyzeMeal({ message: 'Test meal' })
+    let response
+    await act(async () => {
+      response = await result.current.analyzeMeal({ message: 'Test meal' })
+    })
 
     expect(response.error).toBe('Network error')
     expect(response.data).toBeNull()

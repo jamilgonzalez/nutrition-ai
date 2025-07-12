@@ -52,6 +52,9 @@ vi.mock('@/hooks/useStreamingMealAnalysis', async () => {
 
 vi.mock('@/lib/mealStorage', () => ({
   saveMeal: vi.fn(),
+  getAllMeals: vi.fn().mockReturnValue([]),
+  getMealsByFrequency: vi.fn().mockReturnValue([]),
+  deleteMeal: vi.fn().mockReturnValue(true),
 }))
 
 vi.mock('@/utils/memoryManagement', () => ({

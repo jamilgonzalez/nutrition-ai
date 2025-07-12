@@ -4,7 +4,7 @@ import { useState, useRef, useMemo, useEffect } from 'react'
 import { useSpeechRecognition } from '@/hooks/useSpeechRecognition'
 import { useImageUpload } from '@/hooks/useImageUpload'
 import { useStreamingMealAnalysis } from '@/hooks/useStreamingMealAnalysis'
-import { saveMeal } from '@/lib/mealStorage'
+import { saveMeal, type RecordedMeal } from '@/lib/mealStorage'
 import { ObjectURLManager } from '@/utils/memoryManagement'
 import { toast } from 'sonner'
 import { FileInput } from './atoms/FileInput'
@@ -229,6 +229,10 @@ export default function MealChatInput({ onMealSaved }: MealChatInputProps) {
     cancelAnalysis()
   }
 
+  const handleMealFromHistoryAdded = (meal: RecordedMeal) => {
+    onMealSaved()
+  }
+
   return (
     <>
       <FileInput
@@ -279,9 +283,11 @@ export default function MealChatInput({ onMealSaved }: MealChatInputProps) {
               onCameraClick={handleCameraClick}
               onImageClick={handleImageClick}
               onVoiceToggle={toggleRecording}
+              onMealFromHistoryAdded={handleMealFromHistoryAdded}
               disabled={isLoading}
               speechSupported={speechSupported}
               isRecording={isRecording}
+              user={user}
             />
           </div>
         )}

@@ -151,6 +151,49 @@ export function deleteMeal(id: string): boolean {
   }
 }
 
+export function getAllMeals(): RecordedMeal[] {
+  if (typeof window === 'undefined') return []
+
+  try {
+    const stored = localStorage.getItem(MEALS_STORAGE_KEY)
+    if (!stored) return []
+
+    const meals: RecordedMeal[] = JSON.parse(stored)
+    return meals.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+  } catch (error) {
+    console.error('Error loading all meals:', error)
+    return []
+  }
+}
+
+export function getMealsByFrequency(): RecordedMeal[] {
+  const meals = getAllMeals()
+  const mealCounts = new Map<string, { meal: RecordedMeal; count: number; lastEaten: Date }>()
+
+  meals.forEach(meal => {
+    const key = meal.name.toLowerCase().trim()
+    const existing = mealCounts.get(key)
+    
+    if (existing) {
+      existing.count++
+      if (new Date(meal.timestamp) > existing.lastEaten) {
+        existing.meal = meal
+        existing.lastEaten = new Date(meal.timestamp)
+      }
+    } else {
+      mealCounts.set(key, {
+        meal,
+        count: 1,
+        lastEaten: new Date(meal.timestamp)
+      })
+    }
+  })
+
+  return Array.from(mealCounts.values())
+    .sort((a, b) => b.count - a.count)
+    .map(item => item.meal)
+}
+
 export function getTodaysNutritionSummary(meals: RecordedMeal[]) {
   return meals.reduce(
     (summary, meal) => {

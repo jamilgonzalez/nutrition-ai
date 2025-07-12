@@ -7,6 +7,7 @@ interface ToolbarButtonProps {
   disabled?: boolean
   variant?: 'outline' | 'ghost' | 'default'
   className?: string
+  ariaLabel?: string
 }
 
 export function ToolbarButton({
@@ -15,6 +16,7 @@ export function ToolbarButton({
   disabled,
   variant = 'outline',
   className,
+  ariaLabel,
 }: ToolbarButtonProps) {
   return (
     <Button
@@ -24,6 +26,7 @@ export function ToolbarButton({
       onClick={onClick}
       disabled={disabled}
       className={`flex-shrink-0 p-2 ${className || ''}`}
+      aria-label={ariaLabel}
     >
       <Icon className="w-4 h-4" />
     </Button>

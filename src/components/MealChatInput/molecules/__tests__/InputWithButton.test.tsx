@@ -2,6 +2,15 @@ import { render, screen, fireEvent } from '@testing-library/react'
 import { InputWithButton } from '../InputWithButton'
 import { describe, it, beforeEach, expect, vi } from 'vitest'
 
+// Mock HTMLFormElement.prototype.requestSubmit for JSDOM
+Object.defineProperty(HTMLFormElement.prototype, 'requestSubmit', {
+  value: function(this: HTMLFormElement) {
+    this.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }))
+  },
+  writable: true,
+  configurable: true,
+})
+
 describe('InputWithButton', () => {
   const mockOnChange = vi.fn()
   const mockOnSubmit = vi.fn()

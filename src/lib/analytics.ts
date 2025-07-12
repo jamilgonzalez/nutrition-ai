@@ -115,6 +115,38 @@ export const analytics = {
     })
   },
 
+  // Meal history events
+  mealHistoryOpened: (userId: string) => {
+    trackEvent('meal_history_opened', { userId })
+  },
+
+  mealHistoryTabChanged: (userId: string, tab: string) => {
+    trackEvent('meal_history_tab_changed', { userId, tab })
+  },
+
+  mealFromHistoryAdded: (userId: string, mealData: Record<string, any>) => {
+    trackEvent('meal_from_history_added', {
+      userId,
+      calories: mealData.calories,
+      protein: mealData.protein,
+      carbs: mealData.carbs,
+      fat: mealData.fat,
+      mealName: mealData.name,
+      source: 'history'
+    })
+  },
+
+  mealFromHistoryDeleted: (userId: string, mealId: string) => {
+    trackEvent('meal_from_history_deleted', { userId, mealId })
+  },
+
+  mealHistorySearchUsed: (userId: string, searchQuery: string) => {
+    trackEvent('meal_history_search_used', { 
+      userId, 
+      searchLength: searchQuery.length 
+    })
+  },
+
   // Error tracking
   errorOccurred: (userId: string, error: string, context?: string) => {
     trackEvent('error_occurred', { 
